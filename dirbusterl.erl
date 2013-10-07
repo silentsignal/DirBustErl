@@ -10,10 +10,12 @@
 
 bust(URL) -> bust(URL, []).
 bust(URL, Config) ->
+	URLs = ets:new(dirbusterl_urls, [named_table]),
 	Waiter = spawn_link(?MODULE, waiter, [self(), Config]),
 	{ok, WordList} = file:open(?WORDLIST, [read, raw, read_ahead, binary]),
 	bust(URL, Waiter, WordList, Config),
-	file:close(WordList).
+	file:close(WordList),
+	ets:delete(URLs).
 
 bust(URL, Waiter, WordList, Config) ->
 	BaseURL = ensure_ends_with_slash(URL),
@@ -103,8 +105,12 @@ burst_wordlist(BaseURL, WordList, Waiter, Check) ->
 	end.
 
 spawn_worker(URL, Waiter) ->
-	Waiter ! started,
-	spawn_link(dirbusterl, try_url, [URL, Waiter]).
+	case ets:insert_new(dirbusterl_urls, {URL}) of
+		true ->
+			Waiter ! started,
+			spawn_link(dirbusterl, try_url, [URL, Waiter]);
+		false -> already_requested
+	end.
 
 try_url(URL, Waiter) -> try_url(URL, Waiter, ?TRIES).
 try_url(URL, Waiter, N) ->
