@@ -32,6 +32,7 @@ bust(URL, Waiter, WordList, Config) ->
 
 urljoin(_, [$h, $t, $t, $p, $:, $/, $/ | _] = Path) -> Path;
 urljoin(_, [$h, $t, $t, $p, $s, $:, $/, $/ | _] = Path) -> Path;
+urljoin(Base, [$., $/ | Rest]) -> urljoin(Base, Rest);
 urljoin(Base, [$., $., $/ | Rest]) ->
 	urljoin(lists:reverse(subslashes(tl(lists:reverse(Base)))), Rest);
 urljoin(Base, Path) -> Base ++ Path.
