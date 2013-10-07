@@ -22,9 +22,20 @@ bust(URL, Waiter, WordList, Config) ->
 	burst_wordlist(BaseURL, WordList, Waiter),
 	Waiter ! finished,
 	receive
+		{bust, {Base, Path}} -> bust(urljoin(ensure_ends_with_slash(Base), Path),
+									Waiter, WordList, Config);
 		{bust, Target} -> bust(Target, Waiter, WordList, Config);
 		done -> done
 	end.
+
+urljoin(_, [$h, $t, $t, $p, $:, $/, $/ | _] = Path) -> Path;
+urljoin(_, [$h, $t, $t, $p, $s, $:, $/, $/ | _] = Path) -> Path;
+urljoin(Base, [$., $., $/ | Rest]) ->
+	urljoin(lists:reverse(subslashes(tl(lists:reverse(Base)))), Rest);
+urljoin(Base, Path) -> Base ++ Path.
+
+subslashes([$/ | _] = URL) -> URL;
+subslashes([_ | Rest]) -> subslashes(Rest).
 
 waiter(Server, Config) -> waiter(Server, Config, 1).
 waiter(Server, _, 0) -> Server ! done;
@@ -40,14 +51,29 @@ waiter(Server, Config, NProcs) ->
 					   _ -> ""
 				   end,
 			io:format("~s ~s~s\n", [Code, URL, Spec]),
-			case {?ENABLED(follow_dirs), ?ENABLED(follow_redirs), Contents} of
-				{true, _, dir} -> Server ! {bust, URL};
-				{_, true, {redir, Target}} -> Server ! {bust, Target};
+			case {?ENABLED(follow_dirs), ?ENABLED(follow_redirs), ?ENABLED(parse_body), Contents} of
+				{true, _, _, dir} -> Server ! {bust, URL ++ "/"};
+				{_, true, _, {redir, Target}} -> Server ! {bust, {URL, Target}};
+				{_, _, true, Body} when Code =/= error, Body =/= "", is_list(Body) ->
+					spawn_link(?MODULE, parse_body, [Body, URL, Server]);
 				_ -> ok
 			end,
 			NProcs - 1
 	end,
 	waiter(Server, Config, NewProcs).
+
+parse_body(Body, URL, Server) ->
+	case re:run(Body, "(?:src|href|action)=(?:\"([^\"]+)\"|'([^']+)'|([^ >]+)[ >])",
+		   [global, {capture, all, list}]) of
+		{match, Results} -> parse_body_values(Results, URL, Server);
+		nomatch -> ok
+	end.
+
+parse_body_values([], _, _) -> ok;
+parse_body_values([Result | Rest], URL, Server) ->
+	Value = string:sub_word(lists:last(Result), 1, $?), %% remove ?foo=bar&...
+	Server ! {bust, {URL, Value}},
+	parse_body_values(Rest, URL, Server).
 
 ensure_ends_with_slash(Str) ->
 	case lists:reverse(Str) of
