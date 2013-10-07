@@ -6,41 +6,43 @@
 -define(BACKOFF_LIMIT, 16384).
 -define(BACKOFF_INTERVAL, 64).
 -define(BACKOFF_MSEC, 3000).
+-define(ENABLED(X), lists:member(X, Config)).
 
-bust(URL) ->
-	Waiter = spawn_link(?MODULE, waiter, [self()]),
+bust(URL) -> bust(URL, []).
+bust(URL, Config) ->
+	Waiter = spawn_link(?MODULE, waiter, [self(), Config]),
 	{ok, WordList} = file:open(?WORDLIST, [read, raw, read_ahead, binary]),
-	bust(URL, Waiter, WordList),
+	bust(URL, Waiter, WordList, Config),
 	file:close(WordList).
 
-bust(URL, Waiter, WordList) ->
+bust(URL, Waiter, WordList, Config) ->
 	BaseURL = ensure_ends_with_slash(URL),
 	spawn_worker(BaseURL, Waiter),
 	file:position(WordList, bof),
 	burst_wordlist(BaseURL, WordList, Waiter),
 	Waiter ! finished,
 	receive
-		{bust, Target} -> bust(Target, Waiter, WordList);
+		{bust, Target} -> bust(Target, Waiter, WordList, Config);
 		done -> done
 	end.
 
-waiter(Server) -> waiter(Server, 1).
-waiter(Server, 0) -> Server ! done;
-waiter(Server, NProcs) ->
+waiter(Server, Config) -> waiter(Server, Config, 1).
+waiter(Server, _, 0) -> Server ! done;
+waiter(Server, Config, NProcs) ->
 	NewProcs = receive
 		started -> NProcs + 1;
 		finished -> NProcs - 1;
 		{get, Pid} -> Pid ! {nprocs, NProcs}, NProcs;
 		{finished, URL, Code, Contents} ->
 			io:format("~s ~s\n", [Code, URL]),
-			case Contents of
-				dir -> Server ! {bust, URL};
-				{redir, Target} -> Server ! {bust, Target};
+			case {?ENABLED(follow_dirs), ?ENABLED(follow_redirs), Contents} of
+				{true, _, dir} -> Server ! {bust, URL};
+				{_, true, {redir, Target}} -> Server ! {bust, Target};
 				_ -> ok
 			end,
 			NProcs - 1
 	end,
-	waiter(Server, NewProcs).
+	waiter(Server, Config, NewProcs).
 
 ensure_ends_with_slash(Str) ->
 	case lists:reverse(Str) of
