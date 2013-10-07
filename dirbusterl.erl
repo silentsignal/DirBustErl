@@ -8,16 +8,20 @@ bust(URL) ->
 	{ok, WordList} = file:open(?WORDLIST, [read, raw, read_ahead, binary]),
 	%%process_flag(trap_exit, true),
 	BaseURL = ensure_ends_with_slash(URL),
-	spawn_worker(BaseURL),
-	NProcs = burst_wordlist(BaseURL, WordList, 1),
-	io:format("~p\n", [NProcs]),
-	wait_for_procs(NProcs),
-	file:close(WordList).
+	Waiter = spawn_link(?MODULE, waiter, [self()]),
+	spawn_worker(BaseURL, Waiter),
+	burst_wordlist(BaseURL, WordList, Waiter),
+	file:close(WordList),
+	Waiter ! finished,
+	receive done -> done end.
 
-wait_for_procs(0) -> ok;
-wait_for_procs(NProcs) ->
-	receive {'DOWN', _, _, _, _} -> ok end,
-	wait_for_procs(NProcs - 1).
+waiter(Server) -> waiter(Server, 2).
+waiter(Server, 0) -> Server ! done;
+waiter(Server, NProcs) ->
+	receive
+		started -> waiter(Server, NProcs + 1);
+		finished -> waiter(Server, NProcs - 1)
+	end.
 
 ensure_ends_with_slash(Str) ->
 	case lists:reverse(Str) of
@@ -25,24 +29,25 @@ ensure_ends_with_slash(Str) ->
 		 WithoutSlash -> lists:reverse([$/ | WithoutSlash])
 	end.
 
-burst_wordlist(BaseURL, WordList, N) ->
+burst_wordlist(BaseURL, WordList, Waiter) ->
 	case file:read_line(WordList) of
-		{ok, <<$#, _/binary>>} -> burst_wordlist(BaseURL, WordList, N);
-		{ok, <<$\n>>} -> burst_wordlist(BaseURL, WordList, N);
+		{ok, <<$#, _/binary>>} -> burst_wordlist(BaseURL, WordList, Waiter);
+		{ok, <<$\n>>} -> burst_wordlist(BaseURL, WordList, Waiter);
 		{ok, Line} ->
 			Postfix = binary_to_list(binary:replace(Line, <<$\n>>, <<>>)),
-			spawn_worker(BaseURL ++ ibrowse_lib:url_encode(Postfix)),
-			burst_wordlist(BaseURL, WordList, N + 1);
-		eof -> N
+			Waiter ! started,
+			spawn_worker(BaseURL ++ ibrowse_lib:url_encode(Postfix), Waiter),
+			burst_wordlist(BaseURL, WordList, Waiter);
+		eof -> ok
 	end.
 
-spawn_worker(URL) ->
-	spawn_monitor(dirbusterl, try_url, [URL]).
+spawn_worker(URL, Waiter) ->
+	spawn_link(dirbusterl, try_url, [URL, Waiter]).
 
-try_url(URL) -> try_url(URL, ?TRIES).
-try_url(URL, N) ->
+try_url(URL, Waiter) -> try_url(URL, Waiter, ?TRIES).
+try_url(URL, Waiter, N) ->
 	case ibrowse:send_req(URL, [], get, [], [], infinity) of
-		{ok, "404", _, _} -> ok;
+		{ok, "404", _, _} -> Waiter ! finished;
 		{ok, Code = [$3 | _], Headers, _} ->
 			Location = get_location(Headers),
 			case get_location(Headers) of
@@ -52,10 +57,11 @@ try_url(URL, N) ->
 						true -> io:format("~s ~s [DIR]\n", [Code, URL]);
 						false -> io:format("~s ~s -> ~s\n", [Code, URL, get_location(Headers)])
 					end
-			end;
-		{ok, Code, _, _} -> io:format("~s ~s\n", [Code, URL]);
-		{error, retry_later} -> timer:sleep(100), try_url(URL, N);
-		{error, _} when N > 0 -> try_url(URL, N - 1)
+			end,
+			Waiter ! finished;
+		{ok, Code, _, _} -> io:format("~s ~s\n", [Code, URL]), Waiter ! finished;
+		{error, retry_later} -> timer:sleep(100), try_url(URL, Waiter, N);
+		{error, _} when N > 0 -> try_url(URL, Waiter, N - 1)
 	end.
 
 get_location([]) -> no_location;
