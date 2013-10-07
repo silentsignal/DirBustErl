@@ -13,20 +13,28 @@ bust(URL, Config) ->
 	URLs = ets:new(dirbusterl_urls, [named_table]),
 	Waiter = spawn_link(?MODULE, waiter, [self(), Config]),
 	{ok, WordList} = file:open(?WORDLIST, [read, raw, read_ahead, binary]),
-	bust(URL, Waiter, WordList, Config),
+	bust(URL, dir, Waiter, WordList, Config),
 	file:close(WordList),
 	ets:delete(URLs).
 
-bust(URL, Waiter, WordList, Config) ->
-	BaseURL = ensure_ends_with_slash(URL),
+bust(URL, Mode, Waiter, WordList, Config) ->
 	spawn_worker(URL, Waiter),
-	file:position(WordList, bof),
-	burst_wordlist(BaseURL, WordList, Waiter),
+	case Mode of
+		dir ->
+			file:position(WordList, bof),
+			BaseURL = ensure_ends_with_slash(URL),
+			burst_wordlist(BaseURL, WordList, Waiter);
+		_ -> ok
+	end,
 	Waiter ! finished,
 	receive
-		{bust, {Base, Path}} -> bust(urljoin(ensure_ends_with_slash(Base), Path),
-									Waiter, WordList, Config);
-		{bust, Target} -> bust(Target, Waiter, WordList, Config);
+		{bust_file, {Base, Path}} ->
+			Waiter ! started,
+			BareBase = lists:reverse(subslashes(lists:reverse(Base))),
+			bust(urljoin(BareBase, Path), file, Waiter, WordList, Config);
+		{bust_dir, Target} ->
+			Waiter ! started,
+			bust(Target, dir, Waiter, WordList, Config);
 		done -> done
 	end.
 
@@ -55,8 +63,8 @@ waiter(Server, Config, NProcs) ->
 				   end,
 			io:format("~s ~s~s\n", [Code, URL, Spec]),
 			case {?ENABLED(follow_dirs), ?ENABLED(follow_redirs), ?ENABLED(parse_body), Contents} of
-				{true, _, _, dir} -> Server ! {bust, URL ++ "/"};
-				{_, true, _, {redir, Target}} -> Server ! {bust, {URL, Target}};
+				{true, _, _, dir} -> Server ! {bust_dir, URL ++ "/"};
+				{_, true, _, {redir, Target}} -> Server ! {bust_file, {URL, Target}};
 				{_, _, true, Body} when Code =/= error, Body =/= "", is_list(Body) ->
 					spawn_link(?MODULE, parse_body, [Body, URL, Server]);
 				_ -> ok
@@ -75,7 +83,7 @@ parse_body(Body, URL, Server) ->
 parse_body_values([], _, _) -> ok;
 parse_body_values([Result | Rest], URL, Server) ->
 	Value = string:sub_word(lists:last(Result), 1, $?), %% remove ?foo=bar&...
-	Server ! {bust, {URL, Value}},
+	Server ! {bust_file, {URL, Value}},
 	parse_body_values(Rest, URL, Server).
 
 ensure_ends_with_slash(Str) ->
