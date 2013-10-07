@@ -34,7 +34,12 @@ waiter(Server, Config, NProcs) ->
 		finished -> NProcs - 1;
 		{get, Pid} -> Pid ! {nprocs, NProcs}, NProcs;
 		{finished, URL, Code, Contents} ->
-			io:format("~s ~s\n", [Code, URL]),
+			Spec = case Contents of
+					   dir -> " [DIR]";
+					   {redir, To} -> " -> " ++ To;
+					   _ -> ""
+				   end,
+			io:format("~s ~s~s\n", [Code, URL, Spec]),
 			case {?ENABLED(follow_dirs), ?ENABLED(follow_redirs), Contents} of
 				{true, _, dir} -> Server ! {bust, URL};
 				{_, true, {redir, Target}} -> Server ! {bust, Target};
