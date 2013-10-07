@@ -2,7 +2,6 @@
 -compile([export_all]).
 
 -define(WORDLIST, "/home/dnet/_app/DirBuster-0.12/directory-list-2.3-small.txt").
--define(WORKERS, 16).
 -define(TRIES, 4).
 
 bust(URL) ->
