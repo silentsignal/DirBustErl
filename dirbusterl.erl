@@ -17,7 +17,7 @@ bust(URL, Config) ->
 
 bust(URL, Waiter, WordList, Config) ->
 	BaseURL = ensure_ends_with_slash(URL),
-	spawn_worker(BaseURL, Waiter),
+	spawn_worker(URL, Waiter),
 	file:position(WordList, bof),
 	burst_wordlist(BaseURL, WordList, Waiter),
 	Waiter ! finished,
