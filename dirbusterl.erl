@@ -67,7 +67,7 @@ waiter(Server, Config, NProcs) ->
 
 parse_body(Body, URL, Server) ->
 	case re:run(Body, "(?:src|href|action)=(?:\"([^\"]+)\"|'([^']+)'|([^ >]+)[ >])",
-		   [global, {capture, all, list}]) of
+		   [global, {capture, all, list}, caseless]) of
 		{match, Results} -> parse_body_values(Results, URL, Server);
 		nomatch -> ok
 	end.
