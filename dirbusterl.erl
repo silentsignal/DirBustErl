@@ -107,7 +107,7 @@ burst_wordlist(BaseURL, WordList, Waiter, Check) ->
 		{ok, <<$#, _/binary>>} -> burst_wordlist(BaseURL, WordList, Waiter, Check);
 		{ok, <<$\n>>} -> burst_wordlist(BaseURL, WordList, Waiter, Check);
 		{ok, Line} ->
-			Postfix = binary_to_list(binary:replace(Line, <<$\n>>, <<>>)),
+			Postfix = binary_to_list(Line, 1, byte_size(Line) - 1),
 			spawn_worker(BaseURL ++ ibrowse_lib:url_encode(Postfix), Waiter),
 			burst_wordlist(BaseURL, WordList, Waiter, Check - 1);
 		eof -> ok
