@@ -180,12 +180,13 @@ spawn_worker(URL, Waiter) ->
 		false -> already_requested
 	end.
 
-try_url(URL, Waiter) -> try_url(URL, Waiter, ?TRIES).
-try_url(URL, Waiter, N) ->
-	case ibrowse:send_req(URL, [], get, [], [], infinity) of
+try_url(URL, Waiter) -> try_url(URL, Waiter, head).
+try_url(URL, Waiter, Method) -> try_url(URL, Waiter, Method, ?TRIES).
+try_url(URL, Waiter, Method, N) ->
+	case ibrowse:send_req(URL, [], Method, [], [], infinity) of
 		{ok, "404", _, _} -> Waiter ! finished;
-		{ok, Code = [$3 | _], Headers, Body} ->
-			Location = get_location(Headers),
+		{ok, _, _, _} when Method =:= head -> try_url(URL, Waiter, get);
+		{ok, Code, Headers, Body} ->
 			Payload = case get_location(Headers) of
 				no_location -> Body;
 				Location ->
@@ -195,9 +196,8 @@ try_url(URL, Waiter, N) ->
 					end
 			end,
 			Waiter ! {finished, URL, Code, Payload};
-		{ok, Code, _, Body} -> Waiter ! {finished, URL, Code, Body};
-		{error, retry_later} -> timer:sleep(100), try_url(URL, Waiter, N);
-		{error, _} when N > 0 -> try_url(URL, Waiter, N - 1);
+		{error, retry_later} -> timer:sleep(100), try_url(URL, Waiter, Method, N);
+		{error, _} when N > 0 -> try_url(URL, Waiter, Method, N - 1);
 		{error, Reason} -> Waiter ! {finished, URL, error, Reason}
 	end.
 
