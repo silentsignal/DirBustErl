@@ -157,15 +157,19 @@ burst_wordlist(BaseURL, WordList, Waiter, Config, 0) ->
 		{nprocs, _} -> burst_wordlist(BaseURL, WordList, Waiter, Config)
 	end;
 burst_wordlist(BaseURL, WordList, Waiter, Config, Check) ->
-	case file:read_line(WordList) of
-		{ok, <<$#, _/binary>>} -> burst_wordlist(BaseURL, WordList, Waiter, Config, Check);
-		{ok, <<$\n>>} -> burst_wordlist(BaseURL, WordList, Waiter, Config, Check);
+	NewCheck = case file:read_line(WordList) of
+		{ok, <<$#, _/binary>>} -> Check;
+		{ok, <<$\n>>} -> Check;
 		{ok, Line} ->
 			Postfix = binary_to_list(Line, 1, byte_size(Line) - 1),
 			UserPF = ["" | proplists:get_value(postfix, Config, [])],
 			[spawn_worker(BaseURL ++ ibrowse_lib:url_encode(Postfix) ++ PF, Waiter) || PF <- UserPF],
-			burst_wordlist(BaseURL, WordList, Waiter, Config, Check - 1);
+			Check - 1;
 		eof -> ok
+	end,
+	case NewCheck of
+		ok -> ok;
+		_ -> burst_wordlist(BaseURL, WordList, Waiter, Config, NewCheck)
 	end.
 
 spawn_worker(URL, Waiter) ->
