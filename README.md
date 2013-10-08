@@ -5,7 +5,7 @@ Dependencies
 ------------
 
  - Recent Erlang distribution
- - ibrowse https://github.com/cmullaparthi/ibrowse
+ - `ibrowse` https://github.com/cmullaparthi/ibrowse
 
 Erlang interface
 ----------------
