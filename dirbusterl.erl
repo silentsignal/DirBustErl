@@ -87,9 +87,9 @@ parse_body_values([Result | Rest], URL, Server) ->
 	parse_body_values(Rest, URL, Server).
 
 ensure_ends_with_slash(Str) ->
-	case lists:reverse(Str) of
-		 [$/ | _] -> Str;
-		 WithoutSlash -> lists:reverse([$/ | WithoutSlash])
+	case lists:last(Str) of
+		$/ -> Str;
+		_ -> Str ++ "/"
 	end.
 
 burst_wordlist(BaseURL, WordList, Waiter) ->
