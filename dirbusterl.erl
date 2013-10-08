@@ -29,14 +29,16 @@ bust(URL, Mode, Waiter, WordList, Config) ->
 	Waiter ! finished,
 	receive
 		{bust_file, {Base, Path}} ->
-			Waiter ! started,
 			BareBase = lists:reverse(subslashes(lists:reverse(Base))),
-			bust(urljoin(BareBase, Path), file, Waiter, WordList, Config);
+			try_bust(urljoin(BareBase, Path), file, Waiter, WordList, Config);
 		{bust_dir, Target} ->
-			Waiter ! started,
-			bust(Target, dir, Waiter, WordList, Config);
+			try_bust(Target, dir, Waiter, WordList, Config);
 		done -> done
 	end.
+
+try_bust(URL, Mode, Waiter, WordList, Config) ->
+	Waiter ! started,
+	bust(URL, Mode, Waiter, WordList, Config).
 
 urljoin(_, [$h, $t, $t, $p, $:, $/, $/ | _] = Path) -> Path;
 urljoin(_, [$h, $t, $t, $p, $s, $:, $/, $/ | _] = Path) -> Path;
