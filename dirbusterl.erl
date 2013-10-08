@@ -111,9 +111,10 @@ parse_body(Body, URL, Server) ->
 
 -define(BODY_RE_HTML_ATTRIBS, "(?:src|href|action)=(?:\"([^\"]+)\"|'([^']+)'|([^ >]+)[ >])").
 -define(BODY_RE_ROBOTS_TXT, "(?:(?:dis)?allow|sitemap): (.*)\\n").
+-define(BODY_RE_CSS_URL, "url\\(['\"]?([^'\")]+)['\"]?\\)").
 
 extract_paths_from_body(Body) ->
-	case re:run(Body, "(?:" ?BODY_RE_HTML_ATTRIBS "|" ?BODY_RE_ROBOTS_TXT ")",
+	case re:run(Body, "(?:" ?BODY_RE_HTML_ATTRIBS "|" ?BODY_RE_ROBOTS_TXT "|" ?BODY_RE_CSS_URL ")",
 		   [global, {capture, all, list}, caseless]) of
 		{match, Results} -> lists:map(fun lists:last/1, Results);
 		nomatch -> []
