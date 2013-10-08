@@ -107,15 +107,21 @@ waiter(Server, Config, NProcs) ->
 	waiter(Server, Config, NewProcs).
 
 parse_body(Body, URL, Server) ->
-	case re:run(Body, "(?:src|href|action)=(?:\"([^\"]+)\"|'([^']+)'|([^ >]+)[ >])",
+	parse_body_values(extract_paths_from_body(Body), URL, Server).
+
+-define(BODY_RE_HTML_ATTRIBS, "(?:src|href|action)=(?:\"([^\"]+)\"|'([^']+)'|([^ >]+)[ >])").
+-define(BODY_RE_ROBOTS_TXT, "(?:(?:dis)?allow|sitemap): (.*)\\n").
+
+extract_paths_from_body(Body) ->
+	case re:run(Body, "(?:" ?BODY_RE_HTML_ATTRIBS "|" ?BODY_RE_ROBOTS_TXT ")",
 		   [global, {capture, all, list}, caseless]) of
-		{match, Results} -> parse_body_values(Results, URL, Server);
-		nomatch -> ok
+		{match, Results} -> lists:map(fun lists:last/1, Results);
+		nomatch -> []
 	end.
 
 parse_body_values([], _, _) -> ok;
 parse_body_values([Result | Rest], URL, Server) ->
-	Value = string:sub_word(string:sub_word(lists:last(Result), 1, $?), 1, $#), %% remove ?... #...
+	Value = string:sub_word(string:sub_word(Result, 1, $?), 1, $#), %% remove ?... #...
 	Server ! {bust_file, {URL, Value}},
 	parse_body_values(Rest, URL, Server).
 
