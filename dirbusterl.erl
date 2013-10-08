@@ -132,7 +132,7 @@ try_url(URL, Waiter, N) ->
 				Location ->
 					case is_dir_redir(URL, Location) of
 						true -> dir;
-						false -> {redir, get_location(Headers)}
+						false -> {redir, Location}
 					end
 			end,
 			Waiter ! {finished, URL, Code, Payload};
