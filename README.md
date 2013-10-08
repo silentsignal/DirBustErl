@@ -1,6 +1,11 @@
 DirBustErl
 ==========
 
+This project aims to become a successor of DirBuster, which is slow, requires
+Java, lacks active development, and is generally PITA. Erlang was chosen as a
+platform to provide high-performance I/O, robustness, concurrency and
+transparent distribution over multiple nodes.
+
 Dependencies
 ------------
 
