@@ -13,7 +13,7 @@ bust(URL, Config) ->
 	URLs = ets:new(dirbusterl_urls, [named_table]),
 	Waiter = spawn_link(?MODULE, waiter, [self(), Config]),
 	{ok, WordList} = file:open(?WORDLIST, [read, raw, read_ahead, binary]),
-	bust(URL, dir, Waiter, WordList, Config),
+	bust(URL, dir, Waiter, WordList, process_url_restriction(Config)),
 	file:close(WordList),
 	ets:delete(URLs).
 
@@ -40,8 +40,29 @@ server_loop(Waiter, WordList, Config) ->
 	end.
 
 try_bust(URL, Mode, Waiter, WordList, Config) ->
-	Waiter ! started,
-	bust(URL, Mode, Waiter, WordList, Config).
+	case url_allowed(URL, Config) of
+		true ->
+			Waiter ! started,
+			bust(URL, Mode, Waiter, WordList, Config);
+		false ->
+			server_loop(Waiter, WordList, Config)
+	end.
+
+url_allowed(URL, Config) ->
+	case proplists:get_value(url_restriction, Config) of
+		undefined -> true;
+		Restriction -> Restriction(URL)
+	end.
+
+process_url_restriction([{url_restriction, Restriction} | Config]) ->
+	Value = case Restriction of
+				X when is_list(X) ->
+					{ok, RE} = re:compile(X),
+					fun(URL) -> re:run(URL, RE, [{capture, none}]) =:= match end
+			end,
+	[{url_restriction, Value} | Config];
+process_url_restriction([Item | Config]) -> [Item | process_url_restriction(Config)];
+process_url_restriction([]) -> [].
 
 urljoin(_, [$h, $t, $t, $p, $:, $/, $/ | _] = Path) -> Path;
 urljoin(_, [$h, $t, $t, $p, $s, $:, $/, $/ | _] = Path) -> Path;
