@@ -41,6 +41,8 @@ server_loop(Waiter, WordList, Config) ->
 		{bust_file, {Base, Path}} ->
 			BareBase = lists:reverse(subslashes(lists:reverse(Base))),
 			try_bust(urljoin(BareBase, Path), file, Waiter, WordList, Config);
+		{bust_file, Target} ->
+			try_bust(Target, file, Waiter, WordList, Config);
 		{bust_dir, Target} ->
 			try_bust(Target, dir, Waiter, WordList, Config);
 		done -> done
@@ -95,16 +97,28 @@ waiter(Server, Config, NProcs) ->
 					   _ -> ""
 				   end,
 			io:format("~s ~s~s\n", [Code, URL, Spec]),
-			case {?ENABLED(follow_dirs), ?ENABLED(follow_redirs), ?ENABLED(parse_body), Contents} of
-				{true, _, _, dir} -> Server ! {bust_dir, URL ++ "/"};
-				{_, true, _, {redir, Target}} -> Server ! {bust_file, {URL, Target}};
-				{_, _, true, Body} when Code =/= error, Body =/= "", is_list(Body) ->
-					spawn_link(?MODULE, parse_body, [Body, URL, Server]);
+			case {?ENABLED(follow_dirs), ?ENABLED(follow_redirs), Contents} of
+				{true, _, dir} -> Server ! {bust_dir, URL ++ "/"};
+				{_, true, {redir, Target}} -> Server ! {bust_file, {URL, Target}};
+				{_, _, Body} when Code =/= error, is_list(Body) ->
+					spawn_link(?MODULE, found_file, [Body, URL, Server, Config]);
 				_ -> ok
 			end,
 			NProcs - 1
 	end,
 	waiter(Server, Config, NewProcs).
+
+found_file(Body, URL, Server, Config) ->
+	case ?ENABLED(parse_body) of
+		true -> spawn_link(?MODULE, parse_body, [Body, URL, Server]);
+		false -> nop
+	end,
+	mangle_found(proplists:get_value(mangle_found, Config, []), URL, Server).
+
+mangle_found([], _, _) -> done;
+mangle_found([Rule | Rest], URL, Server) ->
+	Server ! {bust_file, re:replace(URL, "/([^/]+)$", "/" ++ Rule, [{return, list}])},
+	mangle_found(Rest, URL, Server).
 
 parse_body(Body, URL, Server) ->
 	parse_body_values(extract_paths_from_body(Body), URL, Server).
