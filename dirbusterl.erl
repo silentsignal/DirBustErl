@@ -108,7 +108,7 @@ parse_body(Body, URL, Server) ->
 
 parse_body_values([], _, _) -> ok;
 parse_body_values([Result | Rest], URL, Server) ->
-	Value = string:sub_word(lists:last(Result), 1, $?), %% remove ?foo=bar&...
+	Value = string:sub_word(string:sub_word(lists:last(Result), 1, $?), 1, $#), %% remove ?... #...
 	Server ! {bust_file, {URL, Value}},
 	parse_body_values(Rest, URL, Server).
 
