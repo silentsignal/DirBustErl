@@ -1,7 +1,7 @@
 DirBustErl
 ==========
 
-This project aims to become a successor of DirBuster, which is slow, requires
+This project aims to become a successor of [DirBuster][1], which is slow, requires
 Java, lacks active development, and is generally PITA. Erlang was chosen as a
 platform to provide high-performance I/O, robustness, concurrency and
 transparent distribution over multiple nodes.
@@ -34,7 +34,10 @@ There's currently one entry point:
  - `parse_body` parse HTML, CSS, `robots.txt` files for URLs
  - `{url_restriction, RE}` allows only such requests that match the regular expression `RE` supplied as a string, example: `{url_restriction, "^http://localhost/foo/"}`
  - `{postfix, List}` append the elements of `List` one by one after each dictionary word, example: `{postfix, [".php", ".html"]}`
- - `{mangle_found, Rules}` for every file found, other files are requested by applying each item of the list `Rules`, the original filename will replace `\1`, example: `{mangle_found, ["\\1~", ".\\1.swp"]}` and some more ideas: https://code.google.com/p/fuzzdb/source/browse/trunk/discovery/FilenameBruteforce/Extensions.Backup.fuzz.txt
+ - `{mangle_found, Rules}` for every file found, other files are requested by
+   applying each item of the list `Rules`, the original filename will replace
+   `\1`, example: `{mangle_found, ["\\1~", ".\\1.swp"]}` and some more ideas:
+   [fuzzdb/discovery/FilenameBruteforce/Extensions.Backup.fuzz.txt][2]
  - `{http_cfg, Params}` set `ibrowse` parameters (proxy, authentication) directly, example: `{http_cfg, [{proxy_host, "localhost"}, {proxy_port, 8081}]}`
 
 TODO
@@ -49,3 +52,6 @@ TODO
  - multi-node support
  - content analysis mode when failed attempts come back as 200
  - custom HTTP headers
+
+  [1]: https://www.owasp.org/index.php/Category:OWASP_DirBuster_Project
+  [2]: https://code.google.com/p/fuzzdb/source/browse/trunk/discovery/FilenameBruteforce/Extensions.Backup.fuzz.txt
