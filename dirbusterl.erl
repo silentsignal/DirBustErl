@@ -23,11 +23,18 @@ bust(URL, Mode, Waiter, WordList, Config) ->
 		dir ->
 			file:position(WordList, bof),
 			BaseURL = ensure_ends_with_slash(URL),
-			burst_wordlist(BaseURL, WordList, Waiter);
+			burst_wordlist(BaseURL, WordList, Waiter, filter_burst_config(Config));
 		_ -> ok
 	end,
 	Waiter ! finished,
 	server_loop(Waiter, WordList, Config).
+
+filter_burst_config(Config) -> filter_burst_config(Config, []).
+filter_burst_config([], Acc) -> Acc;
+filter_burst_config([Item | Config], Acc) when element(1, Item) =:= postfix ->
+	filter_burst_config(Config, [Item | Acc]);
+filter_burst_config([_ | Config], Acc) ->
+	filter_burst_config(Config, Acc).
 
 server_loop(Waiter, WordList, Config) ->
 	receive
@@ -118,24 +125,25 @@ ensure_ends_with_slash(Str) ->
 		_ -> Str ++ "/"
 	end.
 
-burst_wordlist(BaseURL, WordList, Waiter) ->
-	burst_wordlist(BaseURL, WordList, Waiter, ?BACKOFF_INTERVAL).
-burst_wordlist(BaseURL, WordList, Waiter, 0) ->
+burst_wordlist(BaseURL, WordList, Waiter, Config) ->
+	burst_wordlist(BaseURL, WordList, Waiter, Config, ?BACKOFF_INTERVAL).
+burst_wordlist(BaseURL, WordList, Waiter, Config, 0) ->
 	Waiter ! {get, self()},
 	receive
 		{nprocs, N} when N > ?BACKOFF_LIMIT ->
 			timer:sleep(?BACKOFF_MSEC),
-			burst_wordlist(BaseURL, WordList, Waiter, 0);
-		{nprocs, _} -> burst_wordlist(BaseURL, WordList, Waiter)
+			burst_wordlist(BaseURL, WordList, Waiter, Config, 0);
+		{nprocs, _} -> burst_wordlist(BaseURL, WordList, Waiter, Config)
 	end;
-burst_wordlist(BaseURL, WordList, Waiter, Check) ->
+burst_wordlist(BaseURL, WordList, Waiter, Config, Check) ->
 	case file:read_line(WordList) of
-		{ok, <<$#, _/binary>>} -> burst_wordlist(BaseURL, WordList, Waiter, Check);
-		{ok, <<$\n>>} -> burst_wordlist(BaseURL, WordList, Waiter, Check);
+		{ok, <<$#, _/binary>>} -> burst_wordlist(BaseURL, WordList, Waiter, Config, Check);
+		{ok, <<$\n>>} -> burst_wordlist(BaseURL, WordList, Waiter, Config, Check);
 		{ok, Line} ->
 			Postfix = binary_to_list(Line, 1, byte_size(Line) - 1),
-			spawn_worker(BaseURL ++ ibrowse_lib:url_encode(Postfix), Waiter),
-			burst_wordlist(BaseURL, WordList, Waiter, Check - 1);
+			UserPF = ["" | proplists:get_value(postfix, Config, [])],
+			[spawn_worker(BaseURL ++ ibrowse_lib:url_encode(Postfix) ++ PF, Waiter) || PF <- UserPF],
+			burst_wordlist(BaseURL, WordList, Waiter, Config, Check - 1);
 		eof -> ok
 	end.
 
