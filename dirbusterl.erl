@@ -27,6 +27,9 @@ bust(URL, Mode, Waiter, WordList, Config) ->
 		_ -> ok
 	end,
 	Waiter ! finished,
+	server_loop(Waiter, WordList, Config).
+
+server_loop(Waiter, WordList, Config) ->
 	receive
 		{bust_file, {Base, Path}} ->
 			BareBase = lists:reverse(subslashes(lists:reverse(Base))),
