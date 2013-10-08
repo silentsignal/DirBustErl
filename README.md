@@ -20,10 +20,12 @@ Dependencies
 Erlang interface
 ----------------
 
+There's currently one entry point:
+
 	dirbusterl:bust(URL, Config)
 
  - `URL` is a string that is requested first (entry point)
- - `Config` can be a list of the following configuration parameters
+ - `Config` can be a list of the following configuration parameters (if omitted, an empty one is assumed)
 
 ### Configuration parameters
 
