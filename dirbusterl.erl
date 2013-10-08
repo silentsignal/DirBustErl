@@ -18,7 +18,7 @@ bust(URL, Config) ->
 	ets:delete(URLs).
 
 bust(URL, Mode, Waiter, WordList, Config) ->
-	spawn_worker(URL, Waiter),
+	spawn_worker(URL, Waiter, proplists:get_value(http_cfg, Config, [])),
 	case Mode of
 		dir ->
 			file:position(WordList, bof),
@@ -31,7 +31,8 @@ bust(URL, Mode, Waiter, WordList, Config) ->
 
 filter_burst_config(Config) -> filter_burst_config(Config, []).
 filter_burst_config([], Acc) -> Acc;
-filter_burst_config([Item | Config], Acc) when element(1, Item) =:= postfix ->
+filter_burst_config([Item | Config], Acc)
+  when element(1, Item) =:= postfix; element(1, Item) =:= http_cfg ->
 	filter_burst_config(Config, [Item | Acc]);
 filter_burst_config([_ | Config], Acc) ->
 	filter_burst_config(Config, Acc).
@@ -163,7 +164,8 @@ burst_wordlist(BaseURL, WordList, Waiter, Config, Check) ->
 		{ok, Line} ->
 			Postfix = binary_to_list(Line, 1, byte_size(Line) - 1),
 			UserPF = ["" | proplists:get_value(postfix, Config, [])],
-			[spawn_worker(BaseURL ++ ibrowse_lib:url_encode(Postfix) ++ PF, Waiter) || PF <- UserPF],
+			Params = proplists:get_value(http_cfg, Config, []),
+			[spawn_worker(BaseURL ++ ibrowse_lib:url_encode(Postfix) ++ PF, Waiter, Params) || PF <- UserPF],
 			Check - 1;
 		eof -> ok
 	end,
@@ -172,20 +174,20 @@ burst_wordlist(BaseURL, WordList, Waiter, Config, Check) ->
 		_ -> burst_wordlist(BaseURL, WordList, Waiter, Config, NewCheck)
 	end.
 
-spawn_worker(URL, Waiter) ->
+spawn_worker(URL, Waiter, Params) ->
 	case ets:insert_new(dirbusterl_urls, {URL}) of
 		true ->
 			Waiter ! started,
-			spawn_link(dirbusterl, try_url, [URL, Waiter]);
+			spawn_link(dirbusterl, try_url, [URL, Waiter, Params]);
 		false -> already_requested
 	end.
 
-try_url(URL, Waiter) -> try_url(URL, Waiter, head).
-try_url(URL, Waiter, Method) -> try_url(URL, Waiter, Method, ?TRIES).
-try_url(URL, Waiter, Method, N) ->
-	case ibrowse:send_req(URL, [], Method, [], [], infinity) of
+try_url(URL, Waiter, Params) -> try_url(URL, Waiter, Params, head).
+try_url(URL, Waiter, Params, Method) -> try_url(URL, Waiter, Params, Method, ?TRIES).
+try_url(URL, Waiter, Params, Method, N) ->
+	case ibrowse:send_req(URL, [], Method, [], Params, infinity) of
 		{ok, "404", _, _} -> Waiter ! finished;
-		{ok, _, _, _} when Method =:= head -> try_url(URL, Waiter, get);
+		{ok, _, _, _} when Method =:= head -> try_url(URL, Waiter, Params, get);
 		{ok, Code, Headers, Body} ->
 			Payload = case get_location(Headers) of
 				no_location -> Body;
@@ -196,8 +198,8 @@ try_url(URL, Waiter, Method, N) ->
 					end
 			end,
 			Waiter ! {finished, URL, Code, Payload};
-		{error, retry_later} -> timer:sleep(100), try_url(URL, Waiter, Method, N);
-		{error, _} when N > 0 -> try_url(URL, Waiter, Method, N - 1);
+		{error, retry_later} -> timer:sleep(100), try_url(URL, Waiter, Params, Method, N);
+		{error, _} when N > 0 -> try_url(URL, Waiter, Params, Method, N - 1);
 		{error, Reason} -> Waiter ! {finished, URL, error, Reason}
 	end.
 

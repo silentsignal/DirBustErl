@@ -23,3 +23,4 @@ Erlang interface
  - `{url_restriction, RE}` allows only such requests that match the regular expression `RE` supplied as a string, example: `{url_restriction, "^http://localhost/foo/"}
  - `{postfix, List}` append the elements of `List` one by one after each dictionary word, example: `{postfix, [".php", ".html"]}`
  - `{mangle_found, Rules}` for every file found, other files are requested by applying each item of the list `Rules`, the original filename will replace `\1`, example: `{mangle_found, ["\\1~", ".\\1.swp"]}` and some more ideas: https://code.google.com/p/fuzzdb/source/browse/trunk/discovery/FilenameBruteforce/Extensions.Backup.fuzz.txt
+ - `{http_cfg, Params}` set `ibrowse` parameters (proxy, authentication) directly, example: `{http_cfg, [{proxy_host, "localhost"}, {proxy_port, 8081}]}`
