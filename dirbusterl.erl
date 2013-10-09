@@ -5,7 +5,7 @@
 -define(BACKOFF_LIMIT, 16384).
 -define(BACKOFF_INTERVAL, 64).
 -define(BACKOFF_MSEC, 3000).
--define(ENABLED(X), lists:member(X, Config)).
+-define(ENABLED(X), proplists:get_bool(X, Config)).
 
 bust(URL) -> bust(URL, []).
 bust(URL, UserConfig) ->
