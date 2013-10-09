@@ -64,6 +64,7 @@ TODO
  - multi-node support
  - content analysis mode when failed attempts come back as 200
  - custom HTTP headers
+ - bust "subdirectories" in deeper URLs
 
   [1]: https://www.owasp.org/index.php/Category:OWASP_DirBuster_Project
   [2]: https://code.google.com/p/fuzzdb/source/browse/trunk/discovery/FilenameBruteforce/Extensions.Backup.fuzz.txt
