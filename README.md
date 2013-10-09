@@ -39,11 +39,23 @@ There's currently one entry point:
    `\1`, example: `{mangle_found, ["\\1~", ".\\1.swp"]}` and some more ideas:
    [fuzzdb/discovery/FilenameBruteforce/Extensions.Backup.fuzz.txt][2]
  - `{http_cfg, Params}` set `ibrowse` parameters (proxy, authentication) directly, example: `{http_cfg, [{proxy_host, "localhost"}, {proxy_port, 8081}]}`
+ - `{wordlist, FileName}` read words from this file (mandatory parameter, only the first occurrence is used), example: `{wordlist, "DirBuster-0.12/directory-list-2.3-small.txt"}`
+ - `{url_list, FileName}` read URLs from this file (zero or more can be used), example: `{url_list, "burp-urls.txt"}`
+
+### Input file formats
+
+URLs and words read from files are parsed according to the following rules.
+
+ - empty lines are ignored
+ - lines starting with a `#` are treated as comments and are ignored
+ - lines can end with either `\n` (line feed, 0x0a, Unix-style) or `\r\n`
+   (carriage return + line feed, 0x0c0a, Windows-style)
+ - characters that are treated specially in URLs (for example `%` or `/`)
+   automatically get URL encoded in wordlists but not in URL lists
 
 TODO
 ----
 
- - Burp history import
  - nmap favicon DB hash detection
  - Etag and Last-Modified parsing
  - web interface
