@@ -9,7 +9,7 @@ urljoin(Base, [$/, $/ | _] = Path) ->
 urljoin(Base, [$/ | _] = Path) ->
 	re:replace(Base, "^([^:]+://[^/]+)/.*$", "\\1" ++ Path, [{return, list}]);
 urljoin(Base, [$., $/ | Rest]) ->
-	urljoin(?CLEAN_LAST_PART(Base), Rest);
+	urljoin(urljoin(Base, "."), Rest);
 urljoin(Base, [$., $., $/ | Rest] = Path) ->
 	case has_at_least_three_slashes(Base) of
 		true -> urljoin(urljoin(Base, ".."), Rest);
