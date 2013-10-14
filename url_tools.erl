@@ -5,7 +5,8 @@ urljoin(Base, [$/, $/ | _] = Path) ->
 	re:replace(Base, "^([^:]+:)//.*$", "\\1" ++ Path, [{return, list}]);
 urljoin(Base, [$/ | _] = Path) ->
 	re:replace(Base, "^([^:]+://[^/]+)/.*$", "\\1" ++ Path, [{return, list}]);
-urljoin(Base, [$., $/ | Rest]) -> urljoin(Base, Rest);
+urljoin(Base, [$., $/ | Rest]) ->
+	urljoin(lists:reverse(subslashes(lists:reverse(Base))), Rest);
 urljoin(Base, [$., $., $/ | Rest]) ->
 	urljoin(urljoin(Base, ".."), Rest);
 urljoin(Base, [Sym | Rest]) when Sym =:= $#; Sym =:= $?; Sym =:= $; ->
@@ -13,6 +14,7 @@ urljoin(Base, [Sym | Rest]) when Sym =:= $#; Sym =:= $?; Sym =:= $; ->
 		not_found -> Base ++ Rest;
 		Stripped -> lists:reverse(Stripped, Rest)
 	end;
+urljoin(Base, "") -> Base;
 urljoin(Base, "..") ->
 	lists:reverse(subslashes(tl(subslashes(lists:reverse(Base)))));
 urljoin(Base, Path) ->
