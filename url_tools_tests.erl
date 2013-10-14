@@ -31,12 +31,18 @@ read_rfc1808_lines_until_51(FP) ->
 	end.
 
 test_rfc1808_lines(FP) ->
-	{ok, Line} = file:read_line(FP),
-	case re:run(Line, "^\\ +([^ ]+)\\ +=\\ <URL:([^>]+)>$", [{capture, all_but_first, list}]) of
-		{match, [Input, Expected]} ->
-			?assertEqual(Expected, url_tools:urljoin(?RFC_1808_BASE, Input)),
+	case file:read_line(FP) of
+		{ok, Line} ->
+			case re:run(Line, "^\\ +([^ ]+)\\ +=\\ <URL:([^>]+)>$",
+						[{capture, all_but_first, list}]) of
+				{match, [Input, Expected]} ->
+					Path = if Input =:= "<>" -> ""; true -> Input end,
+					Output = url_tools:urljoin(?RFC_1808_BASE, Path),
+					?assertEqual(Expected, Output);
+				_ -> not_a_test
+			end,
 			test_rfc1808_lines(FP);
-		_ -> ok
+		eof -> ok
 	end.
 
 ensure_ends_with_slash_test() ->
