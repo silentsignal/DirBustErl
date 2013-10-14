@@ -16,6 +16,7 @@ Dependencies
 
  - Recent Erlang distribution
  - `ibrowse` https://github.com/cmullaparthi/ibrowse
+ - RFC 1808 http://tools.ietf.org/rfc/rfc1808.txt (for unit tests only)
 
 Erlang interface
 ----------------
