@@ -7,7 +7,7 @@ urljoin(Base, [$/ | _] = Path) ->
 	re:replace(Base, "^([^:]+://[^/]+)/.*$", "\\1" ++ Path, [{return, list}]);
 urljoin(Base, [$., $/ | Rest]) -> urljoin(Base, Rest);
 urljoin(Base, [$., $., $/ | Rest]) ->
-	urljoin(lists:reverse(subslashes(tl(lists:reverse(Base)))), Rest);
+	urljoin(lists:reverse(subslashes(tl(subslashes(lists:reverse(Base))))), Rest);
 urljoin(Base, Path) -> Base ++ Path.
 
 subslashes([$/ | _] = URL) -> URL;
