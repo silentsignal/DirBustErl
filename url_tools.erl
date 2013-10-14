@@ -15,6 +15,7 @@ urljoin(Base, [Sym | Rest]) when Sym =:= $#; Sym =:= $?; Sym =:= $; ->
 		Stripped -> lists:reverse(Stripped, Rest)
 	end;
 urljoin(Base, "") -> Base;
+urljoin(Base, ".") -> lists:reverse(subslashes(lists:reverse(Base)));
 urljoin(Base, "..") ->
 	lists:reverse(subslashes(tl(subslashes(lists:reverse(Base)))));
 urljoin(Base, Path) ->
