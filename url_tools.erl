@@ -1,16 +1,19 @@
 -module(url_tools).
 -export([urljoin/2, subslashes/1, ensure_ends_with_slash/1]).
 
+-define(REPLACE_LAST_PART(X, Y), lists:reverse(subslashes(lists:reverse(X)), Y)).
+-define(CLEAN_LAST_PART(X), ?REPLACE_LAST_PART(X, [])).
+
 urljoin(Base, [$/, $/ | _] = Path) ->
 	re:replace(Base, "^([^:]+:)//.*$", "\\1" ++ Path, [{return, list}]);
 urljoin(Base, [$/ | _] = Path) ->
 	re:replace(Base, "^([^:]+://[^/]+)/.*$", "\\1" ++ Path, [{return, list}]);
 urljoin(Base, [$., $/ | Rest]) ->
-	urljoin(lists:reverse(subslashes(lists:reverse(Base))), Rest);
+	urljoin(?CLEAN_LAST_PART(Base), Rest);
 urljoin(Base, [$., $., $/ | Rest] = Path) ->
 	case has_at_least_three_slashes(Base) of
 		true -> urljoin(urljoin(Base, ".."), Rest);
-		false -> lists:reverse(subslashes(lists:reverse(Base)), Path)
+		false -> ?REPLACE_LAST_PART(Base, Path)
 	end;
 urljoin(Base, [Sym | Rest]) when Sym =:= $#; Sym =:= $?; Sym =:= $; ->
 	case strip_symbol(lists:reverse(Base), Sym) of
@@ -18,7 +21,7 @@ urljoin(Base, [Sym | Rest]) when Sym =:= $#; Sym =:= $?; Sym =:= $; ->
 		Stripped -> lists:reverse(Stripped, Rest)
 	end;
 urljoin(Base, "") -> Base;
-urljoin(Base, ".") -> lists:reverse(subslashes(lists:reverse(Base)));
+urljoin(Base, ".") -> ?CLEAN_LAST_PART(Base);
 urljoin(Base, "..") ->
 	lists:reverse(subslashes(tl(subslashes(lists:reverse(Base)))));
 urljoin(Base, Path) ->
