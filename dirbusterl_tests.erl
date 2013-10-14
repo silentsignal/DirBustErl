@@ -1,4 +1,4 @@
--module(dirbusterl_test).
+-module(dirbusterl_tests).
 -include_lib("eunit/include/eunit.hrl").
 
 is_dir_redir_test() ->

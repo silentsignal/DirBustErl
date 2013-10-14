@@ -1,4 +1,4 @@
--module(url_tools_test).
+-module(url_tools_tests).
 -include_lib("eunit/include/eunit.hrl").
 
 -define(RFC_1808_BASE, "http://a/b/c/d;p?q#f").
