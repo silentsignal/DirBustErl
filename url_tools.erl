@@ -7,7 +7,7 @@ urljoin(Base, [$/ | _] = Path) ->
 	re:replace(Base, "^([^:]+://[^/]+)/.*$", "\\1" ++ Path, [{return, list}]);
 urljoin(Base, [$., $/ | Rest]) -> urljoin(Base, Rest);
 urljoin(Base, [$., $., $/ | Rest]) ->
-	urljoin(lists:reverse(subslashes(tl(subslashes(lists:reverse(Base))))), Rest);
+	urljoin(urljoin(Base, ".."), Rest);
 urljoin(Base, [Sym | Rest]) when Sym =:= $#; Sym =:= $?; Sym =:= $; ->
 	case strip_symbol(lists:reverse(Base), Sym) of
 		not_found -> Base ++ Rest;
