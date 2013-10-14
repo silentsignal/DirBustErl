@@ -23,7 +23,7 @@ bust(URL, Mode, Waiter, WordList, Config) ->
 	case Mode of
 		dir ->
 			file:position(WordList, bof),
-			BaseURL = ensure_ends_with_slash(URL),
+			BaseURL = url_tools:ensure_ends_with_slash(URL),
 			burst_wordlist(BaseURL, WordList, Waiter, filter_burst_config(Config));
 		_ -> ok
 	end,
@@ -62,8 +62,8 @@ filter_burst_config([_ | Config], Acc) ->
 server_loop(Waiter, WordList, Config) ->
 	receive
 		{bust_file, {Base, Path}} ->
-			BareBase = lists:reverse(subslashes(lists:reverse(Base))),
-			try_bust(urljoin(BareBase, Path), file, Waiter, WordList, Config);
+			BareBase = lists:reverse(url_tools:subslashes(lists:reverse(Base))),
+			try_bust(url_tools:urljoin(BareBase, Path), file, Waiter, WordList, Config);
 		{bust_file, Target} ->
 			try_bust(Target, file, Waiter, WordList, Config);
 		{bust_dir, Target} ->
@@ -95,18 +95,6 @@ process_url_restriction([{url_restriction, Restriction} | Config]) ->
 	[{url_restriction, Value} | Config];
 process_url_restriction([Item | Config]) -> [Item | process_url_restriction(Config)];
 process_url_restriction([]) -> [].
-
-urljoin(_, [$h, $t, $t, $p, $:, $/, $/ | _] = Path) -> Path;
-urljoin(_, [$h, $t, $t, $p, $s, $:, $/, $/ | _] = Path) -> Path;
-urljoin(Base, [$/ | _] = Path) ->
-	re:replace(Base, "^(https?://[^/]+)/.*$", "\\1" ++ Path, [{return, list}]);
-urljoin(Base, [$., $/ | Rest]) -> urljoin(Base, Rest);
-urljoin(Base, [$., $., $/ | Rest]) ->
-	urljoin(lists:reverse(subslashes(tl(lists:reverse(Base)))), Rest);
-urljoin(Base, Path) -> Base ++ Path.
-
-subslashes([$/ | _] = URL) -> URL;
-subslashes([_ | Rest]) -> subslashes(Rest).
 
 waiter(Server, Config) -> waiter(Server, Config, 1).
 waiter(Server, _, 0) -> Server ! done;
@@ -164,12 +152,6 @@ parse_body_values([Result | Rest], URL, Server) ->
 	Value = string:sub_word(string:sub_word(Result, 1, $?), 1, $#), %% remove ?... #...
 	Server ! {bust_file, {URL, Value}},
 	parse_body_values(Rest, URL, Server).
-
-ensure_ends_with_slash(Str) ->
-	case lists:last(Str) of
-		$/ -> Str;
-		_ -> Str ++ "/"
-	end.
 
 burst_wordlist(BaseURL, WordList, Waiter, Config) ->
 	burst_wordlist(BaseURL, WordList, Waiter, Config, ?BACKOFF_INTERVAL).
