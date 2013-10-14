@@ -4,7 +4,7 @@
 urljoin(_, [$h, $t, $t, $p, $:, $/, $/ | _] = Path) -> Path;
 urljoin(_, [$h, $t, $t, $p, $s, $:, $/, $/ | _] = Path) -> Path;
 urljoin(Base, [$/ | _] = Path) ->
-	re:replace(Base, "^(https?://[^/]+)/.*$", "\\1" ++ Path, [{return, list}]);
+	re:replace(Base, "^([^:]+://[^/]+)/.*$", "\\1" ++ Path, [{return, list}]);
 urljoin(Base, [$., $/ | Rest]) -> urljoin(Base, Rest);
 urljoin(Base, [$., $., $/ | Rest]) ->
 	urljoin(lists:reverse(subslashes(tl(lists:reverse(Base)))), Rest);
