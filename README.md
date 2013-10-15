@@ -54,6 +54,17 @@ URLs and words read from files are parsed according to the following rules.
  - characters that are treated specially in URLs (for example `%` or `/`)
    automatically get URL encoded in wordlists but not in URL lists
 
+Example run
+-----------
+
+For those poor Erlang-unaware souls
+
+```
+$ erl -pa /your/path/to/ibrowse/ebin/
+1> ibrowse:start().
+2> dirbusterl:bust("http://www.example.com", [{wordlist,"wordlist.txt"},{postfix,[".html"]},parse_body]).
+```
+
 TODO
 ----
 
