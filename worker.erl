@@ -1,6 +1,8 @@
 -module(worker).
 -export([try_url/3]).
 
+-include_lib("eunit/include/eunit.hrl").
+
 -define(TRIES, 8).
 
 try_url(URL, Waiter, Params) -> try_url(URL, Waiter, Params, head).
@@ -35,3 +37,7 @@ is_dir_redir([C | URL], [C | Loc]) ->
 	is_dir_redir(URL, Loc);
 is_dir_redir("", "/") -> true;
 is_dir_redir(_, _) -> false.
+
+is_dir_redir_test() ->
+	?assert(is_dir_redir("http://foo/bar", "http://foo/bar/")),
+	?assertNot(is_dir_redir("http://foo/bar", "http://qux/baz/")).

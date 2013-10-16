@@ -1,6 +1,8 @@
 -module(waiter).
 -export([waiter/2, parse_body/3, found_file/4]).
 
+-include_lib("eunit/include/eunit.hrl").
+
 -define(ENABLED(X), proplists:get_bool(X, Config)).
 
 waiter(Server, Config) -> waiter(Server, Config, 1).
@@ -59,3 +61,10 @@ parse_body_values([Result | Rest], URL, Server) ->
 	Value = string:sub_word(string:sub_word(Result, 1, $?), 1, $#), %% remove ?... #...
 	Server ! {bust_file, {URL, Value}},
 	parse_body_values(Rest, URL, Server).
+
+extract_paths_from_body_test() ->
+	?assertEqual(
+	   extract_paths_from_body("<img src='foo.png'>\nDisallow: /foo/bar\n"
+										  "nameg\n\n@import url('/css/styles.css');\n"),
+	   ["foo.png","/foo/bar","/css/styles.css"]
+	  ).
