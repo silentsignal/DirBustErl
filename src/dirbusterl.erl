@@ -1,6 +1,6 @@
 -module(dirbusterl).
 -export([bust/2]).
--record(state, {waiter, wordlist, config}).
+-record(state, {waiter, wordlist, config, urls}).
 
 -define(BACKOFF_LIMIT, 16384).
 -define(BACKOFF_INTERVAL, 64).
@@ -9,17 +9,17 @@
 -define(getStateConfigList(X), proplists:get_value(X, State#state.config, [])).
 
 bust(URL, UserConfig) ->
-	URLs = ets:new(dirbusterl_urls, [named_table]),
+	URLs = ets:new(dirbusterl_urls, []),
 	{Inputs, Config} = process_inputs_open(process_url_restriction(UserConfig)),
 	Waiter = waiter:start_link(Config),
 	process_url_lists(Inputs, Waiter, filter_burst_config(Config)),
 	WordList = proplists:get_value(wordlist, Inputs),
-	bust(URL, dir, #state{waiter=Waiter, wordlist=WordList, config=Config}),
+	bust(URL, dir, #state{waiter=Waiter, wordlist=WordList, config=Config, urls=URLs}),
 	process_inputs_close(Inputs),
 	ets:delete(URLs).
 
 bust(URL, Mode, State) ->
-	spawn_worker(URL, State#state.waiter, ?getStateConfigList(http_cfg)),
+	spawn_worker(URL, State, ?getStateConfigList(http_cfg)),
 	case Mode of
 		dir ->
 			file:position(State#state.wordlist, bof),
@@ -114,12 +114,12 @@ burst_wordlist(BaseURL, State, Check) ->
 			Postfix = binary_to_list(Line, 1, byte_size(Line) - 1),
 			Params = ?getStateConfigList(http_cfg),
 			case BaseURL of
-				url_list -> spawn_worker(Postfix, State#state.waiter, Params);
+				url_list -> spawn_worker(Postfix, State, Params);
 				_ ->
 					UserPF = ["" | ?getStateConfigList(postfix)],
 					[spawn_worker(
 					   BaseURL ++ ibrowse_lib:url_encode(Postfix) ++ PF,
-					   State#state.waiter, Params) || PF <- UserPF]
+					   State, Params) || PF <- UserPF]
 			end,
 			Check - 1;
 		eof -> ok
@@ -129,9 +129,10 @@ burst_wordlist(BaseURL, State, Check) ->
 		_ -> burst_wordlist(BaseURL, State, NewCheck)
 	end.
 
-spawn_worker(URL, Waiter, Params) ->
-	case ets:insert_new(dirbusterl_urls, {URL}) of
+spawn_worker(URL, State, Params) ->
+	case ets:insert_new(State#state.urls, {URL}) of
 		true ->
+			Waiter = State#state.waiter,
 			waiter:worker_started(Waiter),
 			spawn_link(worker, try_url, [URL, Waiter, Params]);
 		false -> already_requested
