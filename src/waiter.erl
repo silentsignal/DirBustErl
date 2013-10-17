@@ -26,7 +26,7 @@ get_nprocs(Waiter) -> gen_server:call(Waiter, get_nprocs).
 
 init(Args) -> {ok, Args}.
 
-handle_cast(finished, S) when S#state.nprocs =:= 1 -> {stop, normal, S};
+handle_cast(finished, S = #state{nprocs=1}) -> {stop, normal, S};
 handle_cast(finished, S) -> {noreply, S#state{nprocs=S#state.nprocs - 1}};
 handle_cast(started, S) -> {noreply, S#state{nprocs=S#state.nprocs + 1}};
 handle_cast({finished, URL, Code, Contents}, S) ->
