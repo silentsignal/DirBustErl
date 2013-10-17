@@ -51,8 +51,10 @@ print_url_found(URL, Code, Contents) ->
 process_url_found(URL, Code, Contents, S) ->
 	Config = S#state.config,
 	case {?ENABLED(follow_dirs), ?ENABLED(follow_redirs), Contents} of
-		{true, _, dir} -> S#state.server ! {bust_dir, URL ++ "/"}, S;
-		{_, true, {redir, Target}} -> S#state.server ! {bust_file, {URL, Target}}, S;
+		{true, _, dir} ->
+			dirbusterl:bust_dir(S#state.server, URL ++ "/"), S;
+		{_, true, {redir, Target}} ->
+			dirbusterl:bust_file(S#state.server, {URL, Target}), S;
 		{_, _, Body} when Code =/= error, is_list(Body) ->
 			spawn_link(?MODULE, found_file, [Body, URL, S#state.server, Config, self()]),
 			S#state{nprocs=S#state.nprocs + 1};
@@ -71,7 +73,8 @@ found_file(Body, URL, Server, Config, Waiter) ->
 
 mangle_found([], _, _) -> done;
 mangle_found([Rule | Rest], URL, Server) ->
-	Server ! {bust_file, re:replace(URL, "/([^/]+)$", "/" ++ Rule, [{return, list}])},
+	File = re:replace(URL, "/([^/]+)$", "/" ++ Rule, [{return, list}]),
+	dirbusterl:bust_file(Server, File),
 	mangle_found(Rest, URL, Server).
 
 parse_body(Body, URL, Server, Waiter) ->
@@ -92,7 +95,7 @@ extract_paths_from_body(Body) ->
 parse_body_values([], _, _) -> ok;
 parse_body_values([Result | Rest], URL, Server) ->
 	Value = string:sub_word(string:sub_word(Result, 1, $?), 1, $#), %% remove ?... #...
-	Server ! {bust_file, {URL, Value}},
+	dirbusterl:bust_file(Server, {URL, Value}),
 	parse_body_values(Rest, URL, Server).
 
 extract_paths_from_body_test() ->

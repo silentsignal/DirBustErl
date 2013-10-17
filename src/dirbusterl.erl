@@ -1,5 +1,5 @@
 -module(dirbusterl).
--export([bust/2]).
+-export([bust/2, bust_file/2, bust_dir/2]).
 -record(state, {waiter, wordlist, config, urls}).
 
 -define(BACKOFF_LIMIT, 16384).
@@ -7,6 +7,8 @@
 -define(BACKOFF_MSEC, 3000).
 
 -define(getStateConfigList(X), proplists:get_value(X, State#state.config, [])).
+
+%% External API
 
 bust(URL, UserConfig) ->
 	URLs = ets:new(dirbusterl_urls, []),
@@ -17,6 +19,11 @@ bust(URL, UserConfig) ->
 	bust(URL, dir, #state{waiter=Waiter, wordlist=WordList, config=Config, urls=URLs}),
 	process_inputs_close(Inputs),
 	ets:delete(URLs).
+
+bust_file(Server, File) -> Server ! {bust_file, File}.
+bust_dir(Server, Dir) -> Server ! {bust_dir, Dir}.
+
+%% Internal functions
 
 bust(URL, Mode, State) ->
 	spawn_worker(URL, State, ?getStateConfigList(http_cfg)),
@@ -31,8 +38,8 @@ bust(URL, Mode, State) ->
 	case url_tools:has_at_least_n_slashes(URL, 4) of
 		true ->
 			[$/ | File] = Dir = url_tools:subslashes(tl(lists:reverse(URL))),
-			self() ! {bust_file, lists:reverse(File)},
-			self() ! {bust_dir, lists:reverse(Dir)};
+			bust_file(self(), File),
+			bust_dir(self(), Dir);
 		false -> nop
 	end,
 	server_loop(State).
