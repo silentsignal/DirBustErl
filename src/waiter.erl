@@ -31,12 +31,7 @@ handle_cast(finished, S) -> {noreply, S#state{nprocs=S#state.nprocs - 1}};
 handle_cast(started, S) -> {noreply, S#state{nprocs=S#state.nprocs + 1}};
 handle_cast({finished, URL, Code, Contents}, S) ->
 	Config = S#state.config,
-	Spec = case Contents of
-			   dir -> " [DIR]";
-			   {redir, To} -> " -> " ++ To;
-			   _ -> ""
-		   end,
-	io:format("~s ~s~s\n", [Code, URL, Spec]),
+	print_url_found(URL, Code, Contents),
 	case {?ENABLED(follow_dirs), ?ENABLED(follow_redirs), Contents} of
 		{true, _, dir} -> S#state.server ! {bust_dir, URL ++ "/"};
 		{_, true, {redir, Target}} -> S#state.server ! {bust_file, {URL, Target}};
@@ -51,6 +46,14 @@ handle_call(get_nprocs, _From, S) -> {reply, S#state.nprocs, S}.
 terminate(normal, S) -> S#state.server ! done.
 
 %% Internal functions
+
+print_url_found(URL, Code, Contents) ->
+	Spec = case Contents of
+			   dir -> " [DIR]";
+			   {redir, To} -> " -> " ++ To;
+			   _ -> ""
+		   end,
+	io:format("~s ~s~s\n", [Code, URL, Spec]).
 
 found_file(Body, URL, Server, Config) ->
 	case ?ENABLED(parse_body) of
