@@ -11,7 +11,7 @@ urljoin(Base, [$/ | _] = Path) ->
 urljoin(Base, [$., $/ | Rest]) ->
 	urljoin(urljoin(Base, "."), Rest);
 urljoin(Base, [$., $., $/ | Rest] = Path) ->
-	case has_at_least_three_slashes(Base) of
+	case has_at_least_n_slashes(Base, 3) of
 		true -> urljoin(urljoin(Base, ".."), Rest);
 		false -> ?REPLACE_LAST_PART(Base, Path)
 	end;
@@ -50,13 +50,12 @@ is_special_path_elem([$; | _]) -> true;
 is_special_path_elem([_ | Rest]) -> is_special_path_elem(Rest);
 is_special_path_elem([]) -> false.
 
-has_at_least_three_slashes(URL) -> has_at_least_three_slashes(URL, 3).
-has_at_least_three_slashes("", _) -> false;
-has_at_least_three_slashes(_, 0) -> true;
-has_at_least_three_slashes([$/ | URL], N) ->
-	has_at_least_three_slashes(URL, N - 1);
-has_at_least_three_slashes([_ | URL], N) ->
-	has_at_least_three_slashes(URL, N).
+has_at_least_n_slashes("", _) -> false;
+has_at_least_n_slashes(_, 0) -> true;
+has_at_least_n_slashes([$/ | URL], N) ->
+	has_at_least_n_slashes(URL, N - 1);
+has_at_least_n_slashes([_ | URL], N) ->
+	has_at_least_n_slashes(URL, N).
 
 subslashes([$/ | _] = URL) -> URL;
 subslashes([_ | Rest]) -> subslashes(Rest).
