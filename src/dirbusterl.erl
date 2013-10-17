@@ -72,8 +72,7 @@ filter_burst_config(Config) ->
 server_loop(State) ->
 	receive
 		{bust_file, {Base, Path}} ->
-			BareBase = lists:reverse(url_tools:subslashes(lists:reverse(Base))),
-			try_bust(url_tools:urljoin(BareBase, Path), file, State);
+			try_bust(url_tools:urljoin(Base, Path), file, State);
 		{bust_file, Target} ->
 			try_bust(Target, file, State);
 		{bust_dir, Target} ->
