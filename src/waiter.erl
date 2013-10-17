@@ -29,17 +29,10 @@ init(Args) -> {ok, Args}.
 handle_cast(finished, S = #state{nprocs=1}) -> {stop, normal, S};
 handle_cast(finished, S) -> {noreply, S#state{nprocs=S#state.nprocs - 1}};
 handle_cast(started, S) -> {noreply, S#state{nprocs=S#state.nprocs + 1}};
-handle_cast({finished, URL, Code, Contents}, S) ->
-	Config = S#state.config,
+handle_cast({finished, URL, Code, Contents}, State) ->
 	print_url_found(URL, Code, Contents),
-	case {?ENABLED(follow_dirs), ?ENABLED(follow_redirs), Contents} of
-		{true, _, dir} -> S#state.server ! {bust_dir, URL ++ "/"};
-		{_, true, {redir, Target}} -> S#state.server ! {bust_file, {URL, Target}};
-		{_, _, Body} when Code =/= error, is_list(Body) ->
-			spawn_link(?MODULE, found_file, [Body, URL, S#state.server, Config]);
-		_ -> ok
-	end,
-	handle_cast(finished, S).
+	NewState = process_url_found(URL, Code, Contents, State),
+	handle_cast(finished, NewState).
 
 handle_call(get_nprocs, _From, S) -> {reply, S#state.nprocs, S}.
 
@@ -54,6 +47,17 @@ print_url_found(URL, Code, Contents) ->
 			   _ -> ""
 		   end,
 	io:format("~s ~s~s\n", [Code, URL, Spec]).
+
+process_url_found(URL, Code, Contents, S) ->
+	Config = S#state.config,
+	case {?ENABLED(follow_dirs), ?ENABLED(follow_redirs), Contents} of
+		{true, _, dir} -> S#state.server ! {bust_dir, URL ++ "/"};
+		{_, true, {redir, Target}} -> S#state.server ! {bust_file, {URL, Target}};
+		{_, _, Body} when Code =/= error, is_list(Body) ->
+			spawn_link(?MODULE, found_file, [Body, URL, S#state.server, Config]);
+		_ -> ok
+	end,
+	S.
 
 found_file(Body, URL, Server, Config) ->
 	case ?ENABLED(parse_body) of
