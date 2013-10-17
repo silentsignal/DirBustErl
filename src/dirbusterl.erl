@@ -28,7 +28,6 @@ bust(URL, Mode, State) ->
 				State#state{config=filter_burst_config(State#state.config)});
 		_ -> ok
 	end,
-	waiter:worker_finished(State#state.waiter),
 	server_loop(State).
 
 process_url_lists([], _, _) -> ok;
@@ -68,14 +67,18 @@ server_loop(State) ->
 		{bust_file, Target} ->
 			try_bust(Target, file, State);
 		{bust_dir, Target} ->
-			try_bust(Target, dir, State);
-		done -> done
+			try_bust(Target, dir, State)
+		after 100 ->
+			Waiter = State#state.waiter,
+			case waiter:get_nprocs(Waiter) of
+				1 -> waiter:worker_finished(Waiter), done;
+				_ -> server_loop(State)
+			end
 	end.
 
 try_bust(URL, Mode, S) ->
 	case url_allowed(URL, S#state.config) of
 		true ->
-			waiter:worker_started(S#state.waiter),
 			bust(URL, Mode, S);
 		false ->
 			server_loop(S)
