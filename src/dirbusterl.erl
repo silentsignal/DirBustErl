@@ -58,13 +58,9 @@ process_inputs_close([{_, FP} | Inputs]) ->
 	file:close(FP),
 	process_inputs_close(Inputs).
 
-filter_burst_config(Config) -> filter_burst_config(Config, []).
-filter_burst_config([], Acc) -> Acc;
-filter_burst_config([Item | Config], Acc)
-  when element(1, Item) =:= postfix; element(1, Item) =:= http_cfg ->
-	filter_burst_config(Config, [Item | Acc]);
-filter_burst_config([_ | Config], Acc) ->
-	filter_burst_config(Config, Acc).
+filter_burst_config(Config) ->
+	[Item || Item <- Config,
+	 element(1, Item) =:= postfix orelse element(1, Item) =:= http_cfg].
 
 server_loop(State) ->
 	receive
