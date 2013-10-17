@@ -1,5 +1,5 @@
 -module(url_tools).
--export([urljoin/2, subslashes/1, ensure_ends_with_slash/1]).
+-export([urljoin/2, subslashes/1, ensure_ends_with_slash/1, has_at_least_n_slashes/2]).
 
 -define(REPLACE_LAST_PART(X, Y), lists:reverse(subslashes(lists:reverse(X)), Y)).
 -define(CLEAN_LAST_PART(X), ?REPLACE_LAST_PART(X, [])).

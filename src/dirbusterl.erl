@@ -28,6 +28,13 @@ bust(URL, Mode, State) ->
 				State#state{config=filter_burst_config(State#state.config)});
 		_ -> ok
 	end,
+	case url_tools:has_at_least_n_slashes(URL, 4) of
+		true ->
+			[$/ | File] = Dir = url_tools:subslashes(tl(lists:reverse(URL))),
+			self() ! {bust_file, lists:reverse(File)},
+			self() ! {bust_dir, lists:reverse(Dir)};
+		false -> nop
+	end,
 	server_loop(State).
 
 process_url_lists([], _, _) -> ok;
