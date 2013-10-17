@@ -1,7 +1,7 @@
 -module(waiter).
 -export([start_link/1, worker_finished/1, worker_finished/4, worker_started/1, get_nprocs/1]).
 -export([init/1, handle_cast/2, handle_call/3, terminate/2]). %% gen_server callbacks
--export([parse_body/3, found_file/4]). %% for spawning internal processes
+-export([parse_body/3, found_file/5]). %% for spawning internal processes
 -behavior(gen_server).
 -record(state, {server, config, nprocs=1}).
 
@@ -51,20 +51,21 @@ print_url_found(URL, Code, Contents) ->
 process_url_found(URL, Code, Contents, S) ->
 	Config = S#state.config,
 	case {?ENABLED(follow_dirs), ?ENABLED(follow_redirs), Contents} of
-		{true, _, dir} -> S#state.server ! {bust_dir, URL ++ "/"};
-		{_, true, {redir, Target}} -> S#state.server ! {bust_file, {URL, Target}};
+		{true, _, dir} -> S#state.server ! {bust_dir, URL ++ "/"}, S;
+		{_, true, {redir, Target}} -> S#state.server ! {bust_file, {URL, Target}}, S;
 		{_, _, Body} when Code =/= error, is_list(Body) ->
-			spawn_link(?MODULE, found_file, [Body, URL, S#state.server, Config]);
-		_ -> ok
-	end,
-	S.
+			spawn_link(?MODULE, found_file, [Body, URL, S#state.server, Config, self()]),
+			S#state{nprocs=S#state.nprocs + 1};
+		_ -> S
+	end.
 
-found_file(Body, URL, Server, Config) ->
+found_file(Body, URL, Server, Config, Waiter) ->
 	case ?ENABLED(parse_body) of
 		true -> spawn_link(?MODULE, parse_body, [Body, URL, Server]);
 		false -> nop
 	end,
-	mangle_found(proplists:get_value(mangle_found, Config, []), URL, Server).
+	mangle_found(proplists:get_value(mangle_found, Config, []), URL, Server),
+	worker_finished(Waiter).
 
 mangle_found([], _, _) -> done;
 mangle_found([Rule | Rest], URL, Server) ->
