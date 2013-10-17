@@ -1,11 +1,10 @@
 -module(dirbusterl).
--export([bust/1, bust/2]).
+-export([bust/2]).
 
 -define(BACKOFF_LIMIT, 16384).
 -define(BACKOFF_INTERVAL, 64).
 -define(BACKOFF_MSEC, 3000).
 
-bust(URL) -> bust(URL, []).
 bust(URL, UserConfig) ->
 	URLs = ets:new(dirbusterl_urls, [named_table]),
 	{Inputs, Config} = process_inputs_open(process_url_restriction(UserConfig)),
