@@ -1,7 +1,7 @@
 -module(waiter).
 -export([start_link/1, worker_finished/1, worker_finished/4, worker_started/1, get_nprocs/1]).
 -export([init/1, handle_cast/2, handle_call/3, terminate/2]). %% gen_server callbacks
--export([parse_body/3, found_file/5]). %% for spawning internal processes
+-export([parse_body/4, found_file/5]). %% for spawning internal processes
 -behavior(gen_server).
 -record(state, {server, config, nprocs=1}).
 
@@ -61,7 +61,9 @@ process_url_found(URL, Code, Contents, S) ->
 
 found_file(Body, URL, Server, Config, Waiter) ->
 	case ?ENABLED(parse_body) of
-		true -> spawn_link(?MODULE, parse_body, [Body, URL, Server]);
+		true ->
+			worker_started(Waiter),
+			spawn_link(?MODULE, parse_body, [Body, URL, Server, Waiter]);
 		false -> nop
 	end,
 	mangle_found(proplists:get_value(mangle_found, Config, []), URL, Server),
@@ -72,8 +74,9 @@ mangle_found([Rule | Rest], URL, Server) ->
 	Server ! {bust_file, re:replace(URL, "/([^/]+)$", "/" ++ Rule, [{return, list}])},
 	mangle_found(Rest, URL, Server).
 
-parse_body(Body, URL, Server) ->
-	parse_body_values(extract_paths_from_body(Body), URL, Server).
+parse_body(Body, URL, Server, Waiter) ->
+	parse_body_values(extract_paths_from_body(Body), URL, Server),
+	worker_finished(Waiter).
 
 -define(BODY_RE_HTML_ATTRIBS, "(?:src|href|action)=(?:\"([^\"]+)\"|'([^']+)'|([^ >]+)[ >])").
 -define(BODY_RE_ROBOTS_TXT, "(?:(?:dis)?allow|sitemap): (.*)\\n").
