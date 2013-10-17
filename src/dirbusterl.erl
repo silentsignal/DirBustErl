@@ -38,8 +38,8 @@ bust(URL, Mode, State) ->
 	case url_tools:has_at_least_n_slashes(URL, 4) of
 		true ->
 			[$/ | File] = Dir = url_tools:subslashes(tl(lists:reverse(URL))),
-			bust_file(self(), File),
-			bust_dir(self(), Dir);
+			bust_file(self(), lists:reverse(File)),
+			bust_dir(self(), lists:reverse(Dir));
 		false -> nop
 	end,
 	server_loop(State).
