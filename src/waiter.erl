@@ -1,34 +1,56 @@
 -module(waiter).
--export([waiter/2, parse_body/3, found_file/4]).
+-export([start_link/1, worker_finished/1, worker_finished/4, worker_started/1, get_nprocs/1]).
+-export([init/1, handle_cast/2, handle_call/3, terminate/2]). %% gen_server callbacks
+-export([parse_body/3, found_file/4]). %% for spawning internal processes
+-behavior(gen_server).
+-record(state, {server, config, nprocs=1}).
 
 -include_lib("eunit/include/eunit.hrl").
 
 -define(ENABLED(X), proplists:get_bool(X, Config)).
 
-waiter(Server, Config) -> waiter(Server, Config, 1).
-waiter(Server, _, 0) -> Server ! done;
-waiter(Server, Config, NProcs) ->
-	NewProcs = receive
-		started -> NProcs + 1;
-		finished -> NProcs - 1;
-		{get, Pid} -> Pid ! {nprocs, NProcs}, NProcs;
-		{finished, URL, Code, Contents} ->
-			Spec = case Contents of
-					   dir -> " [DIR]";
-					   {redir, To} -> " -> " ++ To;
-					   _ -> ""
-				   end,
-			io:format("~s ~s~s\n", [Code, URL, Spec]),
-			case {?ENABLED(follow_dirs), ?ENABLED(follow_redirs), Contents} of
-				{true, _, dir} -> Server ! {bust_dir, URL ++ "/"};
-				{_, true, {redir, Target}} -> Server ! {bust_file, {URL, Target}};
-				{_, _, Body} when Code =/= error, is_list(Body) ->
-					spawn_link(?MODULE, found_file, [Body, URL, Server, Config]);
-				_ -> ok
-			end,
-			NProcs - 1
+%% External API
+
+start_link(Config) ->
+	State = #state{server=self(), config=Config},
+	{ok, Pid} = gen_server:start_link(?MODULE, State, []),
+	Pid.
+
+worker_finished(Waiter) -> gen_server:cast(Waiter, finished).
+worker_finished(Waiter, URL, Code, Contents) ->
+	gen_server:cast(Waiter, {finished, URL, Code, Contents}).
+worker_started(Waiter) -> gen_server:cast(Waiter, started).
+get_nprocs(Waiter) -> gen_server:call(Waiter, get_nprocs).
+
+%% Callbacks for gen_server
+
+init(Args) -> {ok, Args}.
+
+handle_cast(finished, S) when S#state.nprocs =:= 1 -> {stop, normal, S};
+handle_cast(finished, S) -> {noreply, S#state{nprocs=S#state.nprocs - 1}};
+handle_cast(started, S) -> {noreply, S#state{nprocs=S#state.nprocs + 1}};
+handle_cast({finished, URL, Code, Contents}, S) ->
+	Config = S#state.config,
+	Spec = case Contents of
+			   dir -> " [DIR]";
+			   {redir, To} -> " -> " ++ To;
+			   _ -> ""
+		   end,
+	io:format("~s ~s~s\n", [Code, URL, Spec]),
+	case {?ENABLED(follow_dirs), ?ENABLED(follow_redirs), Contents} of
+		{true, _, dir} -> S#state.server ! {bust_dir, URL ++ "/"};
+		{_, true, {redir, Target}} -> S#state.server ! {bust_file, {URL, Target}};
+		{_, _, Body} when Code =/= error, is_list(Body) ->
+			spawn_link(?MODULE, found_file, [Body, URL, S#state.server, Config]);
+		_ -> ok
 	end,
-	waiter(Server, Config, NewProcs).
+	handle_cast(finished, S).
+
+handle_call(get_nprocs, _From, S) -> {reply, S#state.nprocs, S}.
+
+terminate(normal, S) -> S#state.server ! done.
+
+%% Internal functions
 
 found_file(Body, URL, Server, Config) ->
 	case ?ENABLED(parse_body) of

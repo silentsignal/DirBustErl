@@ -9,7 +9,7 @@ try_url(URL, Waiter, Params) -> try_url(URL, Waiter, Params, head).
 try_url(URL, Waiter, Params, Method) -> try_url(URL, Waiter, Params, Method, ?TRIES).
 try_url(URL, Waiter, Params, Method, N) ->
 	case ibrowse:send_req(URL, [], Method, [], Params, infinity) of
-		{ok, "404", _, _} -> Waiter ! finished;
+		{ok, "404", _, _} -> waiter:worker_finished(Waiter);
 		{ok, _, _, _} when Method =:= head -> try_url(URL, Waiter, Params, get);
 		{ok, Code, Headers, Body} ->
 			Payload = case get_location(Headers) of
@@ -20,10 +20,10 @@ try_url(URL, Waiter, Params, Method, N) ->
 						false -> {redir, Location}
 					end
 			end,
-			Waiter ! {finished, URL, Code, Payload};
+			waiter:worker_finished(Waiter, URL, Code, Payload);
 		{error, retry_later} -> timer:sleep(100), try_url(URL, Waiter, Params, Method, N);
 		{error, _} when N > 0 -> try_url(URL, Waiter, Params, Method, N - 1);
-		{error, Reason} -> Waiter ! {finished, URL, error, Reason}
+		{error, Reason} -> waiter:worker_finished(Waiter, URL, error, Reason)
 	end.
 
 get_location([]) -> no_location;

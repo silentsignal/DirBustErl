@@ -9,7 +9,7 @@ bust(URL) -> bust(URL, []).
 bust(URL, UserConfig) ->
 	URLs = ets:new(dirbusterl_urls, [named_table]),
 	{Inputs, Config} = process_inputs_open(process_url_restriction(UserConfig)),
-	Waiter = spawn_link(waiter, waiter, [self(), Config]),
+	Waiter = waiter:start_link(Config),
 	process_url_lists(Inputs, Waiter, filter_burst_config(Config)),
 	WordList = proplists:get_value(wordlist, Inputs),
 	bust(URL, dir, Waiter, WordList, Config),
@@ -25,7 +25,7 @@ bust(URL, Mode, Waiter, WordList, Config) ->
 			burst_wordlist(BaseURL, WordList, Waiter, filter_burst_config(Config));
 		_ -> ok
 	end,
-	Waiter ! finished,
+	waiter:worker_finished(Waiter),
 	server_loop(Waiter, WordList, Config).
 
 process_url_lists([], _, _) -> ok;
@@ -72,7 +72,7 @@ server_loop(Waiter, WordList, Config) ->
 try_bust(URL, Mode, Waiter, WordList, Config) ->
 	case url_allowed(URL, Config) of
 		true ->
-			Waiter ! started,
+			waiter:worker_started(Waiter),
 			bust(URL, Mode, Waiter, WordList, Config);
 		false ->
 			server_loop(Waiter, WordList, Config)
@@ -97,12 +97,11 @@ process_url_restriction([]) -> [].
 burst_wordlist(BaseURL, WordList, Waiter, Config) ->
 	burst_wordlist(BaseURL, WordList, Waiter, Config, ?BACKOFF_INTERVAL).
 burst_wordlist(BaseURL, WordList, Waiter, Config, 0) ->
-	Waiter ! {get, self()},
-	receive
-		{nprocs, N} when N > ?BACKOFF_LIMIT ->
+	case waiter:get_nprocs(Waiter) of
+		N when N > ?BACKOFF_LIMIT ->
 			timer:sleep(?BACKOFF_MSEC),
 			burst_wordlist(BaseURL, WordList, Waiter, Config, 0);
-		{nprocs, _} -> burst_wordlist(BaseURL, WordList, Waiter, Config)
+		_ -> burst_wordlist(BaseURL, WordList, Waiter, Config)
 	end;
 burst_wordlist(BaseURL, WordList, Waiter, Config, Check) ->
 	NewCheck = case file:read_line(WordList) of
@@ -130,7 +129,7 @@ burst_wordlist(BaseURL, WordList, Waiter, Config, Check) ->
 spawn_worker(URL, Waiter, Params) ->
 	case ets:insert_new(dirbusterl_urls, {URL}) of
 		true ->
-			Waiter ! started,
+			waiter:worker_started(Waiter),
 			spawn_link(worker, try_url, [URL, Waiter, Params]);
 		false -> already_requested
 	end.
