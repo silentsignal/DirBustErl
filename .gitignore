@@ -1,1 +1,3 @@
-rfc1808.txt
+deps
+.eunit
+ebin

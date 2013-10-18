@@ -1,0 +1,15 @@
+{application, dirbusterl,
+ [
+  {description, "DirBustErl"},
+  {vsn, "1.0"},
+  {modules, [
+             dirbusterl, waiter, worker, url_tools
+            ]},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  ibrowse
+                 ]},
+  {env, []}
+ ]}.
