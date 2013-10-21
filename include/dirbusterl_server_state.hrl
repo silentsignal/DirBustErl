@@ -1,0 +1,1 @@
+-record(state, {waiter, wordlist, config, urls}).
