@@ -15,7 +15,7 @@ bust(URL, Mode, State) ->
 			file:position(State#state.wordlist, bof),
 			BaseURL = url_tools:ensure_ends_with_slash(URL),
 			burst_wordlist(BaseURL,
-				State#state{config=dirbusterl:filter_burst_config(State#state.config)});
+				State#state{config=dirbusterl_config:filter_burst_config(State#state.config)});
 		_ -> ok
 	end,
 	case url_tools:has_at_least_n_slashes(URL, 4) of
