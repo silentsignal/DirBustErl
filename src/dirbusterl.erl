@@ -2,6 +2,7 @@
 -export([bust/2, bust_file/2, bust_dir/2, filter_burst_config/1]).
 -include_lib("dirbusterl_server_state.hrl").
 
+
 %% External API
 
 bust(URL, UserConfig) ->
@@ -16,6 +17,7 @@ bust(URL, UserConfig) ->
 
 bust_file(Server, File) -> Server ! {bust_file, File}.
 bust_dir(Server, Dir) -> Server ! {bust_dir, Dir}.
+
 
 %% Internal functions
 

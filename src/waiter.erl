@@ -9,6 +9,7 @@
 
 -define(ENABLED(X), proplists:get_bool(X, Config)).
 
+
 %% External API
 
 start_link(Config) ->
@@ -21,6 +22,7 @@ worker_finished(Waiter, URL, Code, Contents) ->
 	gen_server:cast(Waiter, {finished, URL, Code, Contents}).
 worker_started(Waiter) -> gen_server:cast(Waiter, started).
 get_nprocs(Waiter) -> gen_server:call(Waiter, get_nprocs).
+
 
 %% Callbacks for gen_server
 
@@ -37,6 +39,7 @@ handle_cast({finished, URL, Code, Contents}, State) ->
 handle_call(get_nprocs, _From, S) -> {reply, S#state.nprocs, S}.
 
 terminate(normal, S) -> S#state.server ! done.
+
 
 %% Internal functions
 
