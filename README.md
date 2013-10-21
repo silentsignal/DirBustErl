@@ -69,9 +69,8 @@ Example run
 
 For those poor Erlang-unaware souls
 
-	$ erl -pa ebin -pa deps/ibrowse/ebin/
-	1> ibrowse:start().
-	2> dirbusterl:bust("http://www.example.com", [{wordlist,"wordlist.txt"},{postfix,[".html"]},parse_body]).
+	$ erl -pa ebin -pa deps/ibrowse/ebin/ -s ibrowse
+	1> dirbusterl:bust("http://www.example.com", [{wordlist,"wordlist.txt"},{postfix,[".html"]},parse_body]).
 
 TODO
 ----
