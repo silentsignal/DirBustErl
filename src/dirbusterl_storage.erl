@@ -7,7 +7,7 @@
 allocate_bust_id(URL, Config) ->
 	Id = now(),
 	{atomic, ok} = mnesia:transaction(fun () ->
-		mnesia:write(#dirbusterl_bust{id=Id, url=URL, config=Config})
+		mnesia:write(#dirbusterl_bust{id=Id, url=list_to_binary(URL), config=Config})
 	end),
 	Id.
 
