@@ -10,6 +10,8 @@ License
 -------
 
 The whole project is available under MIT license, see `LICENSE.txt`.
+The `ece_resource_static` module is from the [eCloudEdit][3] project, developed
+by James Yu, released under MIT license as well.
 
 Dependencies
 ------------
@@ -89,3 +91,4 @@ TODO
 
   [1]: https://www.owasp.org/index.php/Category:OWASP_DirBuster_Project
   [2]: https://code.google.com/p/fuzzdb/source/browse/trunk/discovery/FilenameBruteforce/Extensions.Backup.fuzz.txt
+  [3]: https://github.com/tsloughter/eCloudEdit
