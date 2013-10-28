@@ -7,7 +7,7 @@
 -include_lib("stdlib/include/qlc.hrl").
 
 allocate_bust_id(URL, Config) ->
-	Id = now(),
+	Id = term_to_binary(now()),
 	{atomic, ok} = mnesia:transaction(fun () ->
 		mnesia:write(#dirbusterl_bust{id=Id, url=list_to_binary(URL), config=Config})
 	end),
@@ -52,9 +52,7 @@ get_server_pid(BustId) ->
 get_busts() ->
 	{atomic, Busts} = mnesia:transaction(fun() ->
 		qlc:e(qlc:q([[
-			{id, string_id(R#dirbusterl_bust.id)},
+			{id, base64:encode(R#dirbusterl_bust.id)},
 			{url, R#dirbusterl_bust.url}] || R <- mnesia:table(dirbusterl_bust)]))
 	end),
 	Busts.
-
-string_id(Id) -> base64:encode(term_to_binary(Id)).
