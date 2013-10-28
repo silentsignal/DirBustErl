@@ -46,10 +46,11 @@ terminate(normal, S) -> S#state.server ! done.
 save_url_found(URL, Code, Contents, BustId) ->
 	Metadata = case Contents of
 			   dir = C -> [C];
-			   {redir, _} = C -> [C];
+			   {redir, Target} -> [{redir, list_to_binary(Target)}];
 			   _ -> []
 		   end,
-	dirbusterl_storage:store_finding(BustId, URL, [{code, Code} | Metadata]).
+	CodeFlag = if is_list(Code) -> list_to_integer(Code); true -> Code end,
+	dirbusterl_storage:store_finding(BustId, list_to_binary(URL), [{code, CodeFlag} | Metadata]).
 
 process_url_found(URL, Code, Contents, S) ->
 	Config = S#state.config,
