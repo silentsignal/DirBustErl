@@ -1,8 +1,10 @@
 -module(dirbusterl_storage).
--export([init_schema/0, allocate_bust_id/2, store_finding/3, get_findings/1, set_server_pid/2, get_server_pid/1]).
+-export([init_schema/0, allocate_bust_id/2, store_finding/3, get_findings/1, set_server_pid/2, get_server_pid/1, get_busts/0]).
 
 -record(dirbusterl_bust, {id, url, config, server_pid=not_started}).
 -record(dirbusterl_finding, {bust_id_url, metadata}).
+
+-include_lib("stdlib/include/qlc.hrl").
 
 allocate_bust_id(URL, Config) ->
 	Id = now(),
@@ -46,3 +48,13 @@ get_server_pid(BustId) ->
 		mnesia:read({dirbusterl_bust, BustId})
 	end),
 	Bust#dirbusterl_bust.server_pid.
+
+get_busts() ->
+	{atomic, Busts} = mnesia:transaction(fun() ->
+		qlc:e(qlc:q([[
+			{id, string_id(R#dirbusterl_bust.id)},
+			{url, R#dirbusterl_bust.url}] || R <- mnesia:table(dirbusterl_bust)]))
+	end),
+	Busts.
+
+string_id(Id) -> base64:encode(term_to_binary(Id)).
