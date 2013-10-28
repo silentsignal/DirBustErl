@@ -1,7 +1,7 @@
 -module(dirbusterl_storage).
--export([init_schema/0, allocate_bust_id/2, store_finding/3, get_findings/1]).
+-export([init_schema/0, allocate_bust_id/2, store_finding/3, get_findings/1, set_server_pid/2, get_server_pid/1]).
 
--record(dirbusterl_bust, {id, url, config}).
+-record(dirbusterl_bust, {id, url, config, server_pid=not_started}).
 -record(dirbusterl_finding, {bust_id_url, metadata}).
 
 allocate_bust_id(URL, Config) ->
@@ -34,3 +34,15 @@ get_findings(BustId) ->
          mnesia:match_object(#dirbusterl_finding{bust_id_url={BustId, '_'}, metadata='_'})
     end),
 	Findings.
+
+set_server_pid(BustId, ServerPid) ->
+	{atomic, ok} = mnesia:transaction(fun () ->
+		[Bust] = mnesia:wread({dirbusterl_bust, BustId}),
+		mnesia:write(Bust#dirbusterl_bust{server_pid=ServerPid})
+	end).
+
+get_server_pid(BustId) ->
+	{atomic, [Bust]} = mnesia:transaction(fun () ->
+		mnesia:read({dirbusterl_bust, BustId})
+	end),
+	Bust#dirbusterl_bust.server_pid.
