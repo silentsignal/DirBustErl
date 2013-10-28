@@ -9,9 +9,11 @@ transparent distribution over multiple nodes.
 License
 -------
 
-The whole project is available under MIT license, see `LICENSE.txt`.
-The `ece_resource_static` module is from the [eCloudEdit][3] project, developed
-by James Yu, released under MIT license as well.
+ - The `ece_resource_static` module is from the [eCloudEdit][3] project, developed
+   by James Yu, released under MIT license.
+ - Twitter Bootstrap (a subset of the files in `priv/static`) is licensed under
+   the Apache 2.0 license.
+ - Everything else is available under MIT license, see `LICENSE.txt`.
 
 Dependencies
 ------------

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>DirBustErl</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="/static/css/dirbusterl.css" rel="stylesheet">
+  </head>
+  <body>
+    <script src="/static/js/jquery-1.10.2.min.js"></script>
+    <!--<script src="/static/js/bootstrap.min.js"></script>-->
+    <script src="/static/js/dirbusterl.js"></script>
+    <div class="container">
+      <form class="form-bust" id="bust">
+        <h2 class="form-bust-heading">DirBustErl</h2>
+        <div class="input-group" id="ig_url">
+          <span class="input-group-addon">URL</span>
+          <input type="text" class="form-control" id="url" placeholder="http://example.com/" autofocus>
+        </div>
+        <div class="input-group">
+          <span class="input-group-addon" id="ig_wordlist">Wordlist</span>
+          <input type="text" class="form-control" id="wordlist">
+        </div>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Start</button>
+      </form>
+    </div>
+  </body>
+</html>
