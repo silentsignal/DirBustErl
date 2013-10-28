@@ -1,9 +1,9 @@
 -module(waiter).
--export([start_link/1, worker_finished/1, worker_finished/4, worker_started/1, get_nprocs/1]).
+-export([start_link/2, worker_finished/1, worker_finished/4, worker_started/1, get_nprocs/1]).
 -export([init/1, handle_cast/2, handle_call/3, terminate/2]). %% gen_server callbacks
 -export([parse_body/4, found_file/5]). %% for spawning internal processes
 -behavior(gen_server).
--record(state, {server, config, nprocs=1}).
+-record(state, {server, config, bust_id, nprocs=1}).
 
 -include_lib("eunit/include/eunit.hrl").
 
@@ -12,8 +12,8 @@
 
 %% External API
 
-start_link(Config) ->
-	State = #state{server=self(), config=Config},
+start_link(Config, BustId) ->
+	State = #state{server=self(), config=Config, bust_id=BustId},
 	{ok, Pid} = gen_server:start_link(?MODULE, State, []),
 	Pid.
 
@@ -32,7 +32,7 @@ handle_cast(finished, S = #state{nprocs=1}) -> {stop, normal, S};
 handle_cast(finished, S) -> {noreply, S#state{nprocs=S#state.nprocs - 1}};
 handle_cast(started, S) -> {noreply, S#state{nprocs=S#state.nprocs + 1}};
 handle_cast({finished, URL, Code, Contents}, State) ->
-	print_url_found(URL, Code, Contents),
+	save_url_found(URL, Code, Contents, State#state.bust_id),
 	NewState = process_url_found(URL, Code, Contents, State),
 	handle_cast(finished, NewState).
 
@@ -43,13 +43,13 @@ terminate(normal, S) -> S#state.server ! done.
 
 %% Internal functions
 
-print_url_found(URL, Code, Contents) ->
-	Spec = case Contents of
-			   dir -> " [DIR]";
-			   {redir, To} -> " -> " ++ To;
-			   _ -> ""
+save_url_found(URL, Code, Contents, BustId) ->
+	Metadata = case Contents of
+			   dir = C -> [C];
+			   {redir, _} = C -> [C];
+			   _ -> []
 		   end,
-	io:format("~s ~s~s\n", [Code, URL, Spec]).
+	dirbusterl_storage:store_finding(BustId, URL, [{code, Code} | Metadata]).
 
 process_url_found(URL, Code, Contents, S) ->
 	Config = S#state.config,

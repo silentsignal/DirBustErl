@@ -70,7 +70,10 @@ Example run
 For those poor Erlang-unaware souls
 
 	$ erl -pa ebin -pa deps/ibrowse/ebin/ -s ibrowse
-	1> dirbusterl:bust("http://www.example.com", [{wordlist,"wordlist.txt"},{postfix,[".html"]},parse_body]).
+	1> mnesia:create_schema([node()]).
+	2> mnesia:start().
+	3> dirbusterl_storage:init_schema().
+	4> dirbusterl:bust("http://www.example.com", [{wordlist,"wordlist.txt"},{postfix,[".html"]},parse_body]).
 
 TODO
 ----
