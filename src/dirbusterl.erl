@@ -27,4 +27,3 @@ process_url_lists([_ | Inputs], Id, Waiter, Config) ->
 
 bust_file(Server, File) -> Server ! {bust_file, File}.
 bust_dir(Server, Dir) -> Server ! {bust_dir, Dir}.
-
