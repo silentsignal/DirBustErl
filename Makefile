@@ -1,17 +1,26 @@
-REBAR=./rebar
-REBAR_COMPILE=$(REBAR) get-deps compile
+ERL ?= erl
+APP := dirbusterl
 RFC1808=priv/rfc1808.txt
 
-compile:
-	$(REBAR_COMPILE)
+.PHONY: deps test
 
-test: $(RFC1808)
-	$(REBAR_COMPILE) eunit
+all: deps
+	@./rebar compile
+
+deps:
+	@./rebar get-deps
+
+test: $(RFC1808) all
+	@./rebar eunit
 
 $(RFC1808):
 	wget http://tools.ietf.org/rfc/rfc1808.txt -O $@
 
 clean:
-	-rm -rf deps ebin .eunit
+	@./rebar clean
 
-.PHONY: compile clean test
+distclean: clean
+	@./rebar delete-deps
+
+docs:
+	@erl -noshell -run edoc_run application '$(APP)' '"."' '[]'

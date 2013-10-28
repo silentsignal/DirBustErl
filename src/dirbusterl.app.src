@@ -1,15 +1,18 @@
+%%-*- mode: erlang -*-
 {application, dirbusterl,
  [
   {description, "DirBustErl"},
   {vsn, "1.0"},
-  {modules, [
-             dirbusterl, waiter, worker, url_tools
-            ]},
+  {modules, []},
   {registered, []},
   {applications, [
                   kernel,
                   stdlib,
-                  ibrowse
+                  inets,
+                  crypto,
+                  mochiweb,
+                  webmachine
                  ]},
+  {mod, { dirbusterl_app, []}},
   {env, []}
  ]}.

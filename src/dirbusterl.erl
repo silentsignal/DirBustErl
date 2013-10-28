@@ -1,4 +1,5 @@
 -module(dirbusterl).
+-export([start/0, start_link/0, stop/0]).
 -export([bust/2, bust_async/2, bust_file/2, bust_dir/2]).
 -export([bust_core/3]). %% for spawning
 -include_lib("dirbusterl_server_state.hrl").
@@ -43,3 +44,50 @@ process_url_lists([_ | Inputs], Id, Waiter, Config) ->
 
 bust_file(Server, File) -> Server ! {bust_file, File}.
 bust_dir(Server, Dir) -> Server ! {bust_dir, Dir}.
+
+ensure_started(App) ->
+    case application:start(App) of
+        ok ->
+            ok;
+        {error, {already_started, App}} ->
+            ok
+    end.
+
+%% @spec start_link() -> {ok,Pid::pid()}
+%% @doc Starts the app for inclusion in a supervisor tree
+start_link() ->
+    ensure_started(inets),
+    ensure_started(crypto),
+    ensure_started(mochiweb),
+    mnesia:create_schema([node()]),
+    ensure_started(mnesia),
+    dirbusterl_storage:init_schema(),
+    application:set_env(webmachine, webmachine_logger_module,
+                        webmachine_logger),
+    ensure_started(webmachine),
+    dirbusterl_sup:start_link().
+
+%% @spec start() -> ok
+%% @doc Start the dirbusterl server.
+start() ->
+    ensure_started(inets),
+    ensure_started(crypto),
+    ensure_started(mochiweb),
+    mnesia:create_schema([node()]),
+    ensure_started(mnesia),
+    dirbusterl_storage:init_schema(),
+    application:set_env(webmachine, webmachine_logger_module,
+                        webmachine_logger),
+    ensure_started(webmachine),
+    application:start(dirbusterl).
+
+%% @spec stop() -> ok
+%% @doc Stop the dirbusterl server.
+stop() ->
+    Res = application:stop(dirbusterl),
+    application:stop(webmachine),
+    application:stop(mnesia),
+    application:stop(mochiweb),
+    application:stop(crypto),
+    application:stop(inets),
+    Res.
