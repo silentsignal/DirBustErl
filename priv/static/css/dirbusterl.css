@@ -14,3 +14,6 @@ body {
 button {
     margin-top: 16px;
 }
+.bust_id {
+    font-family: monospace;
+}

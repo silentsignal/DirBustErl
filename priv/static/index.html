@@ -13,7 +13,7 @@
     <script src="/static/js/dirbusterl.js"></script>
     <div class="container">
       <form class="form-bust" id="bust">
-        <h2 class="form-bust-heading">DirBustErl</h2>
+        <h2 class="form-bust-heading">Start a DirBustErl session</h2>
         <div class="input-group" id="ig_url">
           <span class="input-group-addon">URL</span>
           <input type="text" class="form-control" id="url" placeholder="http://example.com/" autofocus>
@@ -24,6 +24,18 @@
         </div>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Start</button>
       </form>
+    <h2>Sessions</h2>
+    <div class="table-responsive">
+      <table class="table" id="sessions">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>URL</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
     </div>
   </body>
 </html>
