@@ -60,7 +60,7 @@ get_busts() ->
 	Busts.
 
 bust_status(not_started) -> <<"not_started">>;
-bust_status(finished) -> <<"finished">>;
+bust_status({finished, _}) -> <<"finished">>;
 bust_status(Pid) when is_pid(Pid) ->
 	case process_info(Pid) of
 		undefined -> <<"broken">>;
