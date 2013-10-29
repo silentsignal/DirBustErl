@@ -53,6 +53,19 @@ get_busts() ->
 	{atomic, Busts} = mnesia:transaction(fun() ->
 		qlc:e(qlc:q([[
 			{id, base64:encode(R#dirbusterl_bust.id)},
+			{config, config_value_to_json(R#dirbusterl_bust.config)},
 			{url, R#dirbusterl_bust.url}] || R <- mnesia:table(dirbusterl_bust)]))
 	end),
 	Busts.
+
+config_to_json({Atom, Value}) ->
+	{Atom, config_value_to_json(Value)};
+config_to_json(Atom) when is_atom(Atom) ->
+	{Atom, true}.
+
+config_value_to_json([Elem | _] = Value) when is_integer(Elem) ->
+	list_to_binary(Value);
+config_value_to_json([Elem | _] = Value) when is_list(Elem) ->
+	lists:map(fun config_value_to_json/1, Value);
+config_value_to_json([Elem | _] = Value) when is_tuple(Elem) ->
+	lists:map(fun config_to_json/1, Value).
