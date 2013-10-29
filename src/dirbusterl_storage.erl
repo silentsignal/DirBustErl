@@ -54,9 +54,18 @@ get_busts() ->
 		qlc:e(qlc:q([[
 			{id, base64:encode(R#dirbusterl_bust.id)},
 			{config, config_value_to_json(R#dirbusterl_bust.config)},
+			{status, bust_status(R#dirbusterl_bust.server_pid)},
 			{url, R#dirbusterl_bust.url}] || R <- mnesia:table(dirbusterl_bust)]))
 	end),
 	Busts.
+
+bust_status(not_started) -> <<"not_started">>;
+bust_status(finished) -> <<"finished">>;
+bust_status(Pid) when is_pid(Pid) ->
+	case process_info(Pid) of
+		undefined -> <<"broken">>;
+		_ -> <<"running">>
+	end.
 
 config_to_json({Atom, Value}) ->
 	{Atom, config_value_to_json(Value)};
