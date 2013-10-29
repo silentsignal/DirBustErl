@@ -7,6 +7,10 @@ function load_sessions() {
 	$.getJSON("/bust", null, load_sessions_data);
 }
 
+function session_detail_clicked(event) {
+	alert("TODO: session details for " + encodeURIComponent(event.data));
+}
+
 function load_sessions_data(sessions) {
 	var tbody = $("#sessions tbody")
 	$(sessions).each(function (n, session) {
@@ -15,6 +19,8 @@ function load_sessions_data(sessions) {
 		var url = document.createElement("td");
 		var a = document.createElement("a");
 		var st = document.createElement("td");
+		var details = document.createElement("td");
+		var button = document.createElement("a");
 		id.className = "bust_id";
 		id.appendChild(document.createTextNode(session.id));
 		a.appendChild(document.createTextNode(session.url));
@@ -41,7 +47,12 @@ function load_sessions_data(sessions) {
 				break;
 		}
 		tr.appendChild(st);
+		button.className = "btn btn-info btn-xs";
+		button.appendChild(document.createTextNode("Details"));
+		details.appendChild(button);
+		tr.appendChild(details);
 		tbody.append(tr);
+		$(button).on("click", null, session.id, session_detail_clicked);
 	});
 }
 
