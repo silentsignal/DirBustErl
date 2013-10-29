@@ -4,11 +4,7 @@ function start_bust(e) {
 }
 
 function load_sessions() {
-	$.ajax({
-		url: "/bust",
-		dataType: "json",
-		success: load_sessions_data
-	});
+	$.getJSON("/bust", null, load_sessions_data);
 }
 
 function load_sessions_data(sessions) {
