@@ -12,7 +12,7 @@ function session_detail_clicked(event) {
 }
 
 function load_sessions_data(sessions) {
-	var tbody = $("#sessions tbody")
+	var tbody = $("#sessions tbody").empty();
 	$(sessions).each(function (n, session) {
 		var tr = document.createElement("tr");
 		var id = document.createElement("td");
