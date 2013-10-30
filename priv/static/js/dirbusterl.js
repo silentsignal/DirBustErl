@@ -1,6 +1,20 @@
 function start_bust(e) {
     e.preventDefault();
-	alert("TODO: bust");
+	data = new Object();
+	$.each(["url", "wordlist"], function(n, e) {
+		data[e] = document.getElementById(e).value;
+	});
+	$.ajax({
+		url: "/bust",
+		type: "POST",
+		data: JSON.stringify(data),
+		contentType: "application/json",
+		statusCode: {
+			201: function() {
+				load_sessions();
+			}
+		}
+	});
 }
 
 function load_sessions() {
