@@ -19,8 +19,24 @@
             <h4 class="modal-title">Bust session details</h4>
           </div>
           <div class="modal-body">
-            <h5>Parameters</h5>
-            <table class="table detailsParams"><tbody></tbody></table>
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#sessionResults" data-toggle="tab">Results</a></li>
+              <li><a href="#sessionParams" data-toggle="tab">Parameters</a></li>
+            </ul>
+            <div class="tab-content">
+              <div id="sessionResults" class="tab-pane active">TODO: results</div>
+              <div id="sessionParams" class="tab-pane">
+                <table class="table detailsParams">
+                  <thead>
+                    <tr>
+                      <th>Parameter</th>
+                      <th>Value</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
