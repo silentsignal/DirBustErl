@@ -8,7 +8,7 @@ function load_sessions() {
 }
 
 function session_detail_clicked(event) {
-	update_session_params(event.data.config);
+	update_session_params(event.data);
 	update_session_findings(event.data.id);
 	$('#detailsModal').modal({});
 }

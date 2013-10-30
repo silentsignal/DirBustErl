@@ -56,9 +56,9 @@ get_busts() ->
 	{atomic, Busts} = mnesia:transaction(fun() ->
 		qlc:e(qlc:q([[
 			{id, base64:encode(R#dirbusterl_bust.id)},
-			{config, config_value_to_json(R#dirbusterl_bust.config)},
 			{status, bust_status(R#dirbusterl_bust.server_pid)},
-			{url, R#dirbusterl_bust.url}] || R <- mnesia:table(dirbusterl_bust)]))
+			{url, R#dirbusterl_bust.url} | config_value_to_json(R#dirbusterl_bust.config)]
+			|| R <- mnesia:table(dirbusterl_bust)]))
 	end),
 	Busts.
 
