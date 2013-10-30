@@ -63,10 +63,11 @@ get_busts() ->
 	Busts.
 
 bust_status(not_started) -> <<"not_started">>;
-bust_status({finished, _}) -> <<"finished">>;
+bust_status({finished, normal}) -> <<"finished">>;
+bust_status({finished, Info}) -> list_to_binary(io_lib:format("~p", [Info]));
 bust_status(Pid) when is_pid(Pid) ->
 	case process_info(Pid) of
-		undefined -> <<"broken">>;
+		undefined -> <<"Process haven't finished but does not exist.">>;
 		_ -> <<"running">>
 	end.
 

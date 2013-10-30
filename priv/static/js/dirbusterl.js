@@ -65,6 +65,10 @@ function update_session_params(config) {
 			label: "ID",
 			type: "string"
 		},
+		"status": {
+			label: "Status",
+			type: "status"
+		},
 		url_restriction: {
 			label: "URL restriction",
 			type: "string"
@@ -114,6 +118,23 @@ function update_session_params(config) {
 				contents.href = config_value;
 				contents.appendChild(document.createTextNode(config_value));
 				break;
+			case "status":
+				switch (config_value) {
+					case "running":
+						contents = document.createTextNode("running");
+						break;
+					case "finished":
+						contents = document.createTextNode("finished");
+						break;
+					case "not_started":
+						contents = document.createTextNode("waiting to start");
+						break;
+					default:
+						contents = document.createElement("pre");
+						contents.appendChild(document.createTextNode(config_value));
+						break;
+				}
+				break;
 		}
 		value.appendChild(contents);
 		tr.appendChild(key);
@@ -140,10 +161,6 @@ function load_sessions_data(sessions) {
 		tr.appendChild(id);
 		tr.appendChild(url);
 		switch (session.status) {
-			case "broken":
-				tr.className = "danger";
-				st.appendChild(document.createTextNode("internal error"));
-				break;
 			case "running":
 				tr.className = "active";
 				st.appendChild(document.createTextNode("running"));
@@ -155,6 +172,10 @@ function load_sessions_data(sessions) {
 			case "not_started":
 				tr.className = "warning";
 				st.appendChild(document.createTextNode("waiting to start"));
+				break;
+			default:
+				tr.className = "danger";
+				st.appendChild(document.createTextNode("internal error"));
 				break;
 		}
 		tr.appendChild(st);
