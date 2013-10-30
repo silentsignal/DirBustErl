@@ -9,7 +9,36 @@ function load_sessions() {
 
 function session_detail_clicked(event) {
 	update_session_params(event.data.config);
+	update_session_findings(event.data.id);
 	$('#detailsModal').modal({});
+}
+
+function update_session_findings(id) {
+	$.getJSON("/bust/" + encodeURIComponent(id), null, load_session_findings);
+}
+
+function load_session_findings(findings) {
+	var tbody = $("#detailsModal .detailsFindings tbody").empty();
+	$(findings).each(function (n, finding) {
+		var tr = document.createElement("tr");
+		var code = document.createElement("td");
+		var url = document.createElement("td");
+		var a = document.createElement("a");
+		code.appendChild(document.createTextNode(finding.code));
+		a.appendChild(document.createTextNode(finding.url));
+		if (finding.dir) {
+			code.appendChild(document.createTextNode(" "));
+			var icon = document.createElement("span");
+			icon.className = "glyphicon glyphicon-folder-open";
+			icon.title = "directory";
+			code.appendChild(icon);
+		}
+		a.href = finding.url;
+		url.appendChild(a);
+		tr.appendChild(code);
+		tr.appendChild(url);
+		tbody.append(tr);
+	});
 }
 
 function update_session_params(config) {
