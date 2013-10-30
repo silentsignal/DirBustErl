@@ -14,7 +14,7 @@ function session_detail_clicked(event) {
 }
 
 function update_session_findings(id) {
-	$.getJSON("/bust/" + encodeURIComponent(id), null, load_session_findings);
+	$.getJSON("/bust/" + id, null, load_session_findings);
 }
 
 function load_session_findings(findings) {
