@@ -11,6 +11,23 @@
     <script src="/static/js/jquery-1.10.2.min.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <script src="/static/js/dirbusterl.js"></script>
+    <div class="modal fade" id="detailsModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">Bust session details</h4>
+          </div>
+          <div class="modal-body">
+            <h5>Parameters</h5>
+            <table class="table detailsParams"><tbody></tbody></table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
     <div class="container">
       <form class="form-bust" id="bust">
         <h2 class="form-bust-heading">Start a DirBustErl session</h2>

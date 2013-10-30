@@ -8,7 +8,17 @@ function load_sessions() {
 }
 
 function session_detail_clicked(event) {
-	alert("TODO: session details for " + encodeURIComponent(event.data));
+	var tbody = $("#detailsModal .detailsParams tbody").empty();
+	var config = event.data.config;
+	var tr = document.createElement("tr");
+	var key = document.createElement("td");
+	var value = document.createElement("td");
+	key.appendChild(document.createTextNode("Recursively bust directories"));
+	value.appendChild(document.createTextNode(config.follow_dirs ? "enabled" : "disabled"));
+	tr.appendChild(key);
+	tr.appendChild(value);
+	tbody.append(tr);
+	$('#detailsModal').modal({});
 }
 
 function load_sessions_data(sessions) {
@@ -52,7 +62,7 @@ function load_sessions_data(sessions) {
 		details.appendChild(button);
 		tr.appendChild(details);
 		tbody.append(tr);
-		$(button).on("click", null, session.id, session_detail_clicked);
+		$(button).on("click", null, session, session_detail_clicked);
 	});
 }
 
