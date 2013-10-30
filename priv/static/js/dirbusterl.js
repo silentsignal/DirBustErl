@@ -9,6 +9,14 @@ function load_sessions() {
 
 function session_detail_clicked(event) {
 	var settings = {
+		url_restriction: {
+			label: "URL restriction",
+			type: "string"
+		},
+		wordlist: {
+			label: "Wordlist",
+			type: "string"
+		},
 		parse_body: {
 			label: "Parse response body",
 			type: "flag"
@@ -29,7 +37,25 @@ function session_detail_clicked(event) {
 		var key = document.createElement("td");
 		var value = document.createElement("td");
 		key.appendChild(document.createTextNode(setting.label));
-		value.appendChild(document.createTextNode(config[name] ? "enabled" : "disabled"));
+		config_value = config[name];
+		switch (setting.type) {
+			case "flag":
+				var icon = document.createElement("span");
+				icon.className = "glyphicon glyphicon-" + (config_value ? "ok" : "remove");
+				value.appendChild(icon);
+				contents = document.createTextNode(" " + (config_value ? "en" : "dis") + "abled");
+				break;
+			case "string":
+				if (config_value == undefined) {
+					contents = document.createTextNode("(none)");
+					value.className = "text-muted";
+				} else {
+					contents = document.createElement("code");
+					contents.appendChild(document.createTextNode(config_value));
+				}
+				break;
+		}
+		value.appendChild(contents);
 		tr.appendChild(key);
 		tr.appendChild(value);
 		tbody.append(tr);
