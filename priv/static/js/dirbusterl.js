@@ -43,6 +43,14 @@ function load_session_findings(findings) {
 
 function update_session_params(config) {
 	var settings = {
+		url: {
+			label: "URL",
+			type: "string"
+		},
+		id: {
+			label: "ID",
+			type: "string"
+		},
 		url_restriction: {
 			label: "URL restriction",
 			type: "string"
