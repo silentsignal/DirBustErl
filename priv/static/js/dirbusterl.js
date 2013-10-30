@@ -8,16 +8,24 @@ function load_sessions() {
 }
 
 function session_detail_clicked(event) {
+	var settings = {
+		follow_dirs: {
+			label: "Recursively bust directories",
+			type: "flag"
+		}
+	};
 	var tbody = $("#detailsModal .detailsParams tbody").empty();
-	var config = event.data.config;
-	var tr = document.createElement("tr");
-	var key = document.createElement("td");
-	var value = document.createElement("td");
-	key.appendChild(document.createTextNode("Recursively bust directories"));
-	value.appendChild(document.createTextNode(config.follow_dirs ? "enabled" : "disabled"));
-	tr.appendChild(key);
-	tr.appendChild(value);
-	tbody.append(tr);
+	$.each(settings, function(name, setting) {
+		var config = event.data.config;
+		var tr = document.createElement("tr");
+		var key = document.createElement("td");
+		var value = document.createElement("td");
+		key.appendChild(document.createTextNode(setting.label));
+		value.appendChild(document.createTextNode(config[name] ? "enabled" : "disabled"));
+		tr.appendChild(key);
+		tr.appendChild(value);
+		tbody.append(tr);
+	});
 	$('#detailsModal').modal({});
 }
 
