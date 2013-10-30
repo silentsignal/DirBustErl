@@ -9,6 +9,14 @@ function load_sessions() {
 
 function session_detail_clicked(event) {
 	var settings = {
+		parse_body: {
+			label: "Parse response body",
+			type: "flag"
+		},
+		follow_redirs: {
+			label: "Follow redirections",
+			type: "flag"
+		},
 		follow_dirs: {
 			label: "Recursively bust directories",
 			type: "flag"
