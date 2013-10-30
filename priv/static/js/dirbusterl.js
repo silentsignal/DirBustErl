@@ -45,7 +45,7 @@ function update_session_params(config) {
 	var settings = {
 		url: {
 			label: "URL",
-			type: "string"
+			type: "url"
 		},
 		id: {
 			label: "ID",
@@ -94,6 +94,11 @@ function update_session_params(config) {
 					contents = document.createElement("code");
 					contents.appendChild(document.createTextNode(config_value));
 				}
+				break;
+			case "url":
+				contents = document.createElement("a");
+				contents.href = config_value;
+				contents.appendChild(document.createTextNode(config_value));
 				break;
 		}
 		value.appendChild(contents);
