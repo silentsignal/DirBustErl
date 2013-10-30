@@ -35,7 +35,10 @@ get_findings(BustId) ->
     {atomic, Findings} = mnesia:transaction(fun() ->
          mnesia:match_object(#dirbusterl_finding{bust_id_url={BustId, '_'}, metadata='_'})
     end),
-	Findings.
+	lists:map(fun finding_to_proplist/1, Findings).
+
+finding_to_proplist(#dirbusterl_finding{bust_id_url={_, URL}, metadata=MD}) ->
+    [{url, URL} | proplists:unfold(MD)].
 
 set_server_pid(BustId, ServerPid) ->
 	{atomic, ok} = mnesia:transaction(fun () ->

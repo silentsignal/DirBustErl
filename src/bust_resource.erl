@@ -11,4 +11,8 @@ content_types_provided(ReqData, State) ->
     {[?CT_JSON], ReqData, State}.
 
 to_json(ReqData, State) ->
-    {mochijson2:encode(dirbusterl_storage:get_busts()), ReqData, State}.
+    Payload = case wrq:disp_path(ReqData) of
+        "" -> dirbusterl_storage:get_busts();
+        BustId -> dirbusterl_storage:get_findings(base64:decode(BustId))
+    end,
+    {mochijson2:encode(Payload), ReqData, State}.
