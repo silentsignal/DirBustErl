@@ -1,6 +1,6 @@
 -module(dirbusterl).
 -export([start/0, start_link/0, stop/0]).
--export([bust/2, bust_async/2, bust_file/2, bust_dir/2]).
+-export([bust/2, bust_async/3, bust_file/2, bust_dir/2]).
 -export([bust_core/3, bust_monitor/3]). %% for spawning
 -include_lib("dirbusterl_server_state.hrl").
 
@@ -8,14 +8,14 @@
 %% External API
 
 bust(URL, UserConfig) ->
-	Id = bust_async(URL, UserConfig),
+	Id = dirbusterl_storage:generate_bust_id(),
+	bust_async(Id, URL, UserConfig),
 	bust_monitor(URL, UserConfig, Id),
 	dirbusterl_storage:get_findings(Id).
 
-bust_async(URL, UserConfig) ->
-	Id = dirbusterl_storage:allocate_bust_id(URL, UserConfig),
-	spawn(?MODULE, bust_monitor, [URL, UserConfig, Id]),
-	Id.
+bust_async(Id, URL, UserConfig) ->
+	dirbusterl_storage:register_bust(Id, URL, UserConfig),
+	spawn(?MODULE, bust_monitor, [URL, UserConfig, Id]).
 
 bust_monitor(URL, UserConfig, Id) ->
 	{Pid, Ref} = spawn_monitor(?MODULE, bust_core, [URL, UserConfig, Id]),

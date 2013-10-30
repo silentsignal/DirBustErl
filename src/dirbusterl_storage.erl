@@ -1,17 +1,17 @@
 -module(dirbusterl_storage).
--export([init_schema/0, allocate_bust_id/2, store_finding/3, get_findings/1, set_server_pid/2, get_server_pid/1, get_busts/0]).
+-export([init_schema/0, generate_bust_id/0, register_bust/3, store_finding/3, get_findings/1, set_server_pid/2, get_server_pid/1, get_busts/0]).
 
 -record(dirbusterl_bust, {id, url, config, server_pid=not_started}).
 -record(dirbusterl_finding, {bust_id_url, metadata}).
 
 -include_lib("stdlib/include/qlc.hrl").
 
-allocate_bust_id(URL, Config) ->
-	Id = term_to_binary(now()),
+generate_bust_id() -> term_to_binary(now()).
+
+register_bust(Id, URL, Config) ->
 	{atomic, ok} = mnesia:transaction(fun () ->
 		mnesia:write(#dirbusterl_bust{id=Id, url=list_to_binary(URL), config=Config})
-	end),
-	Id.
+	end).
 
 init_schema() ->
 	case mnesia:create_table(dirbusterl_bust, [
