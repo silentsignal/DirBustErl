@@ -8,6 +8,11 @@ function load_sessions() {
 }
 
 function session_detail_clicked(event) {
+	update_session_params(event.data.config);
+	$('#detailsModal').modal({});
+}
+
+function update_session_params(config) {
 	var settings = {
 		url_restriction: {
 			label: "URL restriction",
@@ -32,7 +37,6 @@ function session_detail_clicked(event) {
 	};
 	var tbody = $("#detailsModal .detailsParams tbody").empty();
 	$.each(settings, function(name, setting) {
-		var config = event.data.config;
 		var tr = document.createElement("tr");
 		var key = document.createElement("td");
 		var value = document.createElement("td");
@@ -60,7 +64,6 @@ function session_detail_clicked(event) {
 		tr.appendChild(value);
 		tbody.append(tr);
 	});
-	$('#detailsModal').modal({});
 }
 
 function load_sessions_data(sessions) {
