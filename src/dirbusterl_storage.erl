@@ -71,6 +71,15 @@ bust_status(Pid) when is_pid(Pid) ->
 		_ -> <<"running">>
 	end.
 
+config_to_json({wordlist, Value}) ->
+    WD = list_to_binary(wordlist_resource:wordlist_dir()),
+    VB = list_to_binary(Value),
+    CommonPrefix = binary:longest_common_prefix([WD, VB]),
+    Payload = case CommonPrefix =:= byte_size(WD) of
+        true -> binary_part(VB, CommonPrefix + 1, byte_size(VB) - CommonPrefix - 1);
+        false -> VB
+    end,
+    {wordlist, Payload};
 config_to_json({Atom, Value}) ->
 	{Atom, config_value_to_json(Value)};
 config_to_json(Atom) when is_atom(Atom) ->
