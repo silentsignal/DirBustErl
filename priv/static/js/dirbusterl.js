@@ -188,7 +188,29 @@ function load_sessions_data(sessions) {
 	});
 }
 
+function load_wordlists() {
+	$.getJSON("/wordlists", null, load_wordlists_data);
+}
+
+function load_wordlists_data(wordlists) {
+	var ul = $("#wldropdown").empty();
+	$(wordlists).each(function (n, wordlist) {
+		var li = document.createElement("li");
+		var a = document.createElement("a");
+		a.href = '#';
+		a.appendChild(document.createTextNode(wordlist));
+		$(a).on("click", null, wordlist, wordlist_selected);
+		li.appendChild(a);
+		ul.append(li);
+	});
+}
+
+function wordlist_selected(event) {
+	document.getElementById("wordlist").value = event.data;
+}
+
 $(function() {
     $("#bust").submit(start_bust);
+	load_wordlists();
 	load_sessions();
 });

@@ -11,7 +11,7 @@ body {
 .input-group {
     margin-top: 8px;
 }
-button {
+button[type=submit] {
     margin-top: 16px;
 }
 .bust_id {

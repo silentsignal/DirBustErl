@@ -62,7 +62,10 @@
           <input type="text" class="form-control" id="url" placeholder="http://example.com/" autofocus>
         </div>
         <div class="input-group">
-          <span class="input-group-addon" id="ig_wordlist">Wordlist</span>
+          <div class="input-group-btn">
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Wordlist <span class="caret"></span></button>
+            <ul class="dropdown-menu" id="wldropdown"></ul>
+          </div>
           <input type="text" class="form-control" id="wordlist">
         </div>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Start</button>
