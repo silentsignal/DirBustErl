@@ -47,13 +47,16 @@ from_json(ReqData, State) ->
         ?AK(<<"http_cfg">>) ;
         ?AK(<<"proxy_host">>) ;
         ?AK(<<"proxy_port">>) ; %% TODO add more ibrowse atoms
-        ?AK(<<"wordlist">>) ;
         ?AK(<<"url_list">>)).
 
 process_json_values(Values) -> process_json_values(Values, no_url, []).
 process_json_values([], URL, CfgAcc) -> {URL, CfgAcc};
 process_json_values([{<<"url">>, URL} | Values], _, CfgAcc) ->
     process_json_values(Values, binary_to_list(URL), CfgAcc);
+process_json_values([{<<"wordlist">>, WordList} | Values], URL, CfgAcc) ->
+    true = ordsets:is_element(WordList, wordlist_resource:wordlists()), %% XXX
+    WLfile = binary_to_list(filename:join(wordlist_resource:wordlist_dir(), WordList)),
+    process_json_values(Values, URL, [{wordlist, WLfile} | CfgAcc]);
 process_json_values([{Key, Value} | Values], URL, CfgAcc) when ?ALLOWED_KEY ->
     Entry = {list_to_atom(binary_to_list(Key)), process_json_value(Value)},
     process_json_values(Values, URL, [Entry | CfgAcc]).
