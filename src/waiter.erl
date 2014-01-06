@@ -53,14 +53,10 @@ terminate(normal, S) -> S#state.server ! done.
 
 %% Internal functions
 
-process_url_found(URL, Code, Contents, S) ->
-	Config = S#state.config,
-	case {?ENABLED(follow_dirs), ?ENABLED(follow_redirs), Contents} of
-		{_, _, Body} when Code =/= error, is_list(Body) ->
-			spawn_link(?MODULE, found_file, [Body, URL, S#state.server, Config, self()]),
-			S#state{nprocs=S#state.nprocs + 1};
-		_ -> S
-	end.
+process_url_found(URL, Code, Contents, S) when Code =/= error, is_list(Contents) ->
+	spawn_link(?MODULE, found_file, [Contents, URL, S#state.server, S#state.config, self()]),
+	S#state{nprocs=S#state.nprocs + 1};
+process_url_found(_, _, _, S) -> S.
 
 found_file(Body, URL, Server, Config, Waiter) ->
 	case ?ENABLED(parse_body) of
