@@ -15,14 +15,9 @@
 start_link(Config, BustId) ->
 	{ok, EventMgr} = gen_event:start_link(),
 	ok = gen_event:add_handler(EventMgr, dirbusterl_url_collector, BustId),
-	ok = case ?ENABLED(follow_dirs) of
-		true -> gen_event:add_handler(EventMgr, dirbusterl_dir_follower, self());
-		_ -> ok
-	end,
-	ok = case ?ENABLED(follow_redirs) of
-		true -> gen_event:add_handler(EventMgr, dirbusterl_redir_follower, self());
-		_ -> ok
-	end,
+	[ok = gen_event:add_handler(EventMgr,
+		list_to_atom("dirbusterl_" ++ Key ++ "_follower"), self())
+		|| Key <- ["dir", "redir"], ?ENABLED(list_to_atom("follow_" ++ Key ++ "s"))],
 	State = #state{server=self(), config=Config, bust_id=BustId, event_mgr=EventMgr},
 	{ok, Pid} = gen_server:start_link(?MODULE, State, []),
 	Pid.
