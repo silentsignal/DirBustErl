@@ -9,7 +9,7 @@
 
 bust(URL, UserConfig) ->
 	Id = dirbusterl_storage:generate_bust_id(),
-	bust_async(Id, URL, UserConfig),
+	dirbusterl_storage:register_bust(Id, URL, UserConfig),
 	bust_monitor(URL, UserConfig, Id),
 	dirbusterl_storage:get_findings(Id).
 
