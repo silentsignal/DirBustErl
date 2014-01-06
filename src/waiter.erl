@@ -3,7 +3,7 @@
 -export([init/1, handle_cast/2, handle_call/3, terminate/2]). %% gen_server callbacks
 -export([parse_body/4, found_file/5]). %% for spawning internal processes
 -behavior(gen_server).
--record(state, {server, config, bust_id, nprocs=1}).
+-record(state, {server, config, bust_id, event_mgr, nprocs=1}).
 
 -include_lib("eunit/include/eunit.hrl").
 
@@ -13,7 +13,17 @@
 %% External API
 
 start_link(Config, BustId) ->
-	State = #state{server=self(), config=Config, bust_id=BustId},
+	{ok, EventMgr} = gen_event:start_link(),
+	ok = gen_event:add_handler(EventMgr, dirbusterl_url_collector, BustId),
+	ok = case ?ENABLED(follow_dirs) of
+		true -> gen_event:add_handler(EventMgr, dirbusterl_dir_follower, self());
+		_ -> ok
+	end,
+	ok = case ?ENABLED(follow_redirs) of
+		true -> gen_event:add_handler(EventMgr, dirbusterl_redir_follower, self());
+		_ -> ok
+	end,
+	State = #state{server=self(), config=Config, bust_id=BustId, event_mgr=EventMgr},
 	{ok, Pid} = gen_server:start_link(?MODULE, State, []),
 	Pid.
 
@@ -31,8 +41,8 @@ init(Args) -> {ok, Args}.
 handle_cast(finished, S = #state{nprocs=1}) -> {stop, normal, S};
 handle_cast(finished, S) -> {noreply, S#state{nprocs=S#state.nprocs - 1}};
 handle_cast(started, S) -> {noreply, S#state{nprocs=S#state.nprocs + 1}};
-handle_cast({finished, URL, Code, Contents}, State) ->
-	save_url_found(URL, Code, Contents, State#state.bust_id),
+handle_cast({finished, URL, Code, Contents} = Event, State) ->
+	gen_event:notify(State#state.event_mgr, Event),
 	NewState = process_url_found(URL, Code, Contents, State),
 	handle_cast(finished, NewState).
 
@@ -43,22 +53,9 @@ terminate(normal, S) -> S#state.server ! done.
 
 %% Internal functions
 
-save_url_found(URL, Code, Contents, BustId) ->
-	Metadata = case Contents of
-			   dir = C -> [C];
-			   {redir, Target} -> [{redir, list_to_binary(Target)}];
-			   _ -> []
-		   end,
-	CodeFlag = if is_list(Code) -> list_to_integer(Code); true -> Code end,
-	dirbusterl_storage:store_finding(BustId, list_to_binary(URL), [{code, CodeFlag} | Metadata]).
-
 process_url_found(URL, Code, Contents, S) ->
 	Config = S#state.config,
 	case {?ENABLED(follow_dirs), ?ENABLED(follow_redirs), Contents} of
-		{true, _, dir} ->
-			dirbusterl:bust_dir(S#state.server, URL ++ "/"), S;
-		{_, true, {redir, Target}} ->
-			dirbusterl:bust_file(S#state.server, {URL, Target}), S;
 		{_, _, Body} when Code =/= error, is_list(Body) ->
 			spawn_link(?MODULE, found_file, [Body, URL, S#state.server, Config, self()]),
 			S#state{nprocs=S#state.nprocs + 1};
