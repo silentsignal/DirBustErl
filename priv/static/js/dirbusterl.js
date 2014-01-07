@@ -33,6 +33,7 @@ function update_session_findings(id) {
 
 function load_session_findings(findings) {
 	var tbody = $("#detailsModal .detailsFindings tbody").empty();
+	findings.sort(function(a, b) { return ((a.url < b.url) ? -1 : ((a.url > b.url) ? 1 : 0)) });
 	$(findings).each(function (n, finding) {
 		var tr = document.createElement("tr");
 		var code = document.createElement("td");
