@@ -154,7 +154,7 @@ function session_abort_clicked(event) {
 		type: "PUT",
 		data: '{"status": "aborted"}',
 		contentType: "application/json",
-		complete: load_sessions
+		complete: load_sessions // TODO (re)load after bust_monitor updated the DB
 	});
 }
 
