@@ -148,6 +148,7 @@ function load_sessions_data(sessions) {
 	$(sessions).each(function (n, session) {
 		var tr = document.createElement("tr");
 		var id = document.createElement("td");
+		var started = document.createElement("td");
 		var url = document.createElement("td");
 		var a = document.createElement("a");
 		var st = document.createElement("td");
@@ -155,10 +156,12 @@ function load_sessions_data(sessions) {
 		var button = document.createElement("a");
 		id.className = "bust_id";
 		id.appendChild(document.createTextNode(session.id));
+		started.appendChild(document.createTextNode(session.started));
 		a.appendChild(document.createTextNode(session.url));
 		a.href = session.url;
 		url.appendChild(a);
 		tr.appendChild(id);
+		tr.appendChild(started);
 		tr.appendChild(url);
 		switch (session.status) {
 			case "running":

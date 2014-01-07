@@ -56,11 +56,17 @@ get_busts() ->
 	{atomic, Busts} = mnesia:transaction(fun() ->
 		qlc:e(qlc:q([[
 			{id, base64:encode(R#dirbusterl_bust.id)},
+			{started, bust_id_to_datetime(R#dirbusterl_bust.id)},
 			{status, bust_status(R#dirbusterl_bust.server_pid)},
 			{url, R#dirbusterl_bust.url} | config_value_to_json(R#dirbusterl_bust.config)]
 			|| R <- mnesia:table(dirbusterl_bust)]))
 	end),
 	Busts.
+
+bust_id_to_datetime(BustId) ->
+	{{Y, Mo, D}, {H, Mi, S}} = calendar:now_to_local_time(binary_to_term(BustId)),
+	list_to_binary(io_lib:format("~4.10.0B-~2.10.0B-~2.10.0B ~2.10.0B:~2.10.0B:~2.10.0B",
+		[Y, Mo, D, H, Mi, S])).
 
 bust_status(not_started) -> <<"not_started">>;
 bust_status({finished, normal}) -> <<"finished">>;
