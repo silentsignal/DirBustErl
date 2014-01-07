@@ -191,9 +191,9 @@ function load_sessions_data(sessions) {
 		button.className = "btn btn-info btn-xs";
 		button.appendChild(document.createTextNode("Details"));
 		details.appendChild(button);
+		$(button).on("click", null, session, session_detail_clicked);
 		tr.appendChild(details);
 		tbody.append(tr);
-		$(button).on("click", null, session, session_detail_clicked);
 	});
 }
 
