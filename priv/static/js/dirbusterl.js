@@ -145,6 +145,7 @@ function update_session_params(config) {
 
 function load_sessions_data(sessions) {
 	var tbody = $("#sessions tbody").empty();
+	sessions.sort(function(a, b) { return ((a.started < b.started) ? 1 : ((a.started > b.started) ? -1 : 0)) });
 	$(sessions).each(function (n, session) {
 		var tr = document.createElement("tr");
 		var id = document.createElement("td");
