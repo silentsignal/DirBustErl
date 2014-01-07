@@ -8,6 +8,8 @@ function start_bust(e) {
 	$.each(["follow_dirs", "follow_redirs", "parse_body"], function(n, e) {
 		if (document.getElementById(e).checked) data[e] = true;
 	});
+	var postfix = document.getElementById("postfix").value.replace(" ", "");
+	if (postfix) data.postfix = postfix.split(",");
 	$.ajax({
 		url: "/bust",
 		type: "POST",
@@ -82,6 +84,10 @@ function update_session_params(config) {
 			label: "Wordlist",
 			type: "string"
 		},
+		postfix: {
+			label: "Postfix",
+			type: "list"
+		},
 		parse_body: {
 			label: "Parse response body",
 			type: "flag"
@@ -116,6 +122,20 @@ function update_session_params(config) {
 				} else {
 					contents = document.createElement("code");
 					contents.appendChild(document.createTextNode(config_value));
+				}
+				break;
+			case "list":
+				if (config_value == undefined) {
+					contents = document.createTextNode("(none)");
+					value.className = "text-muted";
+				} else {
+					contents = document.createElement("div");
+					$(config_value).each(function(n, item) {
+						if (n) contents.appendChild(document.createTextNode(", "));
+						code = document.createElement("code");
+						code.appendChild(document.createTextNode(item));
+						contents.appendChild(code);
+					});
 				}
 				break;
 			case "url":
@@ -271,10 +291,43 @@ function url_changed(event) {
 	}
 }
 
+function postfix_selected(event) {
+	var postfix = "." + event.data;
+	var field = document.getElementById("postfix");
+	var idx = field.value.indexOf(postfix);
+	if (idx != -1) {
+		if (idx == field.value.length - postfix.length) {
+			field.value = field.value.replace(new RegExp(
+				"[, ]*" + postfix.replace(".", "\\.")), "");
+		} else {
+			field.value = field.value.replace(new RegExp(
+				postfix.replace(".", "\\.") + "[, ]*"), "");
+		}
+	} else {
+		if (field.value) postfix = ", " + postfix;
+		field.value += postfix;
+	}
+	return false;
+}
+
+function fill_postfixes() {
+	var ul = $("#pfdropdown").empty();
+	$("asp,aspx,html,jsp,php".split(",")).each(function (n, postfix) {
+		var li = document.createElement("li");
+		var a = document.createElement("a");
+		a.href = '#';
+		a.appendChild(document.createTextNode(postfix));
+		$(a).on("click", null, postfix, postfix_selected);
+		li.appendChild(a);
+		ul.append(li);
+	});
+}
+
 $(function() {
     $("#bust").submit(start_bust);
 	load_wordlists();
 	load_sessions();
+	fill_postfixes();
 	url_changed({target: {value: ""}});
 	$("#url").on("change", null, null, url_changed);
 });
