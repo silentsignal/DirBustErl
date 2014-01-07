@@ -14,7 +14,7 @@ content_types_accepted(ReqData, State) ->
     {[{"application/json", from_json}], ReqData, State}.
 
 allowed_methods(ReqData, State) ->
-    {['HEAD', 'GET', 'POST'], ReqData, State}.
+    {['HEAD', 'GET', 'POST', 'PUT'], ReqData, State}.
 
 post_is_create(ReqData, State) ->
     {true, ReqData, State}.
@@ -32,8 +32,12 @@ to_json(ReqData, State) ->
 from_json(ReqData, State) ->
     Id = base64:decode(wrq:disp_path(ReqData)),
     {struct, Values} = mochijson2:decode(wrq:req_body(ReqData)),
-    {URL, Config} = process_json_values(Values),
-    dirbusterl:bust_async(Id, URL, Config),
+    case {Values, dirbusterl_storage:get_server_pid(Id)} of
+        {[{<<"status">>, <<"aborted">>}], Pid} when is_pid(Pid) -> exit(Pid, user_abortion);
+        {_, not_registered} ->
+            {URL, Config} = process_json_values(Values),
+            dirbusterl:bust_async(Id, URL, Config)
+    end,
     {true, ReqData, State}.
 
 -define(AK(X), Key =:= X).

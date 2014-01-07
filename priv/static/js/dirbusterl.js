@@ -148,6 +148,16 @@ function update_session_params(config) {
 	});
 }
 
+function session_abort_clicked(event) {
+	$.ajax({
+		url: "/bust/" + event.data.id,
+		type: "PUT",
+		data: '{"status": "aborted"}',
+		contentType: "application/json",
+		complete: load_sessions
+	});
+}
+
 function load_sessions_data(sessions) {
 	var tbody = $("#sessions tbody").empty();
 	sessions.sort(function(a, b) { return ((a.started < b.started) ? 1 : ((a.started > b.started) ? -1 : 0)) });
@@ -192,6 +202,14 @@ function load_sessions_data(sessions) {
 		button.appendChild(document.createTextNode("Details"));
 		details.appendChild(button);
 		$(button).on("click", null, session, session_detail_clicked);
+		if (session.status == "running") {
+			button = document.createElement("a");
+			button.className = "btn btn-danger btn-xs";
+			button.appendChild(document.createTextNode("Abort"));
+			details.appendChild(document.createTextNode(" "));
+			details.appendChild(button);
+			$(button).on("click", null, session, session_abort_clicked);
+		}
 		tr.appendChild(details);
 		tbody.append(tr);
 	});
