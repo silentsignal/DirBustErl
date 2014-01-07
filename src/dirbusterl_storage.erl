@@ -47,10 +47,13 @@ set_server_pid(BustId, ServerPid) ->
 	end).
 
 get_server_pid(BustId) ->
-	{atomic, [Bust]} = mnesia:transaction(fun () ->
+	{atomic, Busts} = mnesia:transaction(fun () ->
 		mnesia:read({dirbusterl_bust, BustId})
 	end),
-	Bust#dirbusterl_bust.server_pid.
+	case Busts of
+		[Bust] -> Bust#dirbusterl_bust.server_pid;
+		[] -> not_registered
+	end.
 
 get_busts() ->
 	{atomic, Busts} = mnesia:transaction(fun() ->
