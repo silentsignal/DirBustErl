@@ -1,7 +1,7 @@
 function start_bust(e) {
     e.preventDefault();
 	data = new Object();
-	$.each(["url", "wordlist"], function(n, e) {
+	$.each(["url", "wordlist", "url_restriction"], function(n, e) {
 		value = document.getElementById(e).value;
 		if (value) data[e] = value;
 	});
@@ -218,8 +218,45 @@ function wordlist_selected(event) {
 	document.getElementById("wordlist").value = event.data;
 }
 
+function url_restriction_selected(event) {
+	document.getElementById("url_restriction").value = event.data;
+}
+
+function url_changed(event) {
+	var url = event.target.value.split("/");
+	var ul = $("#urdropdown").empty();
+	if (url.length < 3) {
+		var li = document.createElement("li");
+		var a = document.createElement("a");
+		a.href = '#';
+		a.appendChild(document.createTextNode("(invalid URL)"));
+		li.appendChild(a);
+		ul.append(li);
+	} else {
+		var res = new Array();
+		var host = url[2].split(":");
+		if (host.length == 2) {
+			res.push("^" + url[0] + "//" + host[0]);
+		}
+		for (var i = 3; i <= url.length; i++) {
+			res.push("^" + url.slice(0, i).join("/"));
+		}
+		$(res).each(function(n, re) {
+			var li = document.createElement("li");
+			var a = document.createElement("a");
+			a.href = '#';
+			a.appendChild(document.createTextNode(re));
+			$(a).on("click", null, re, url_restriction_selected);
+			li.appendChild(a);
+			ul.append(li);
+		});
+	}
+}
+
 $(function() {
     $("#bust").submit(start_bust);
 	load_wordlists();
 	load_sessions();
+	url_changed({target: {value: ""}});
+	$("#url").on("change", null, null, url_changed);
 });
