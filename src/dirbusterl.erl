@@ -22,7 +22,7 @@ bust_monitor(URL, UserConfig, Id) ->
 	dirbusterl_storage:set_server_pid(Id, Pid),
 	receive
 		{'DOWN', Ref, process, Pid, Info} ->
-			dirbusterl_storage:set_server_pid(Id, {finished, Info})
+			dirbusterl_storage:set_server_pid(Id, {finished, os:timestamp(), Info})
 	end.
 
 bust_core(URL, UserConfig, Id) ->

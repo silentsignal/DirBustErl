@@ -61,6 +61,10 @@ get_busts() ->
 			{id, base64:encode(R#dirbusterl_bust.id)},
 			{started, bust_id_to_datetime(R#dirbusterl_bust.id)},
 			{status, bust_status(R#dirbusterl_bust.server_pid)},
+			{ended, if is_tuple(R#dirbusterl_bust.server_pid),
+					   element(1, R#dirbusterl_bust.server_pid) =:= finished ->
+						   timestamp_to_datetime(element(2, R#dirbusterl_bust.server_pid));
+					   true -> null end},
 			{url, R#dirbusterl_bust.url} | config_value_to_json(R#dirbusterl_bust.config)]
 			|| R <- mnesia:table(dirbusterl_bust)]))
 	end),
@@ -75,8 +79,8 @@ timestamp_to_datetime(TimeStamp) ->
 		[Y, Mo, D, H, Mi, S])).
 
 bust_status(not_started) -> <<"not_started">>;
-bust_status({finished, normal}) -> <<"finished">>;
-bust_status({finished, Info}) -> list_to_binary(io_lib:format("~p", [Info]));
+bust_status({finished, _, normal}) -> <<"finished">>;
+bust_status({finished, _, Info}) -> list_to_binary(io_lib:format("~p", [Info]));
 bust_status(Pid) when is_pid(Pid) ->
 	case process_info(Pid) of
 		undefined -> <<"Process haven't finished but does not exist.">>;

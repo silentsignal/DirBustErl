@@ -186,7 +186,7 @@ function load_sessions_data(sessions) {
 				break;
 			case "finished":
 				tr.className = "success";
-				st.appendChild(document.createTextNode("finished"));
+				st.appendChild(document.createTextNode("finished at " + session.ended));
 				break;
 			case "not_started":
 				tr.className = "warning";
@@ -194,7 +194,7 @@ function load_sessions_data(sessions) {
 				break;
 			default:
 				tr.className = "danger";
-				st.appendChild(document.createTextNode("aborted"));
+				st.appendChild(document.createTextNode("aborted at " + session.ended));
 				break;
 		}
 		tr.appendChild(st);
