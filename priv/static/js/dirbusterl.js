@@ -4,6 +4,9 @@ function start_bust(e) {
 	$.each(["url", "wordlist"], function(n, e) {
 		data[e] = document.getElementById(e).value;
 	});
+	$.each(["follow_dirs", "follow_redirs", "parse_body"], function(n, e) {
+		if (document.getElementById(e).checked) data[e] = true;
+	});
 	$.ajax({
 		url: "/bust",
 		type: "POST",

@@ -68,6 +68,17 @@
           </div>
           <input type="text" class="form-control" id="wordlist">
         </div>
+        <div class="input-group">
+            <label class="checkbox-inline">
+                <input type="checkbox" id="follow_dirs" checked> Recurse into subdirectories
+            </label>
+            <label class="checkbox-inline">
+                <input type="checkbox" id="follow_redirs" checked> Follow redirections
+            </label>
+            <label class="checkbox-inline">
+                <input type="checkbox" id="parse_body" checked> Parse response body
+            </label>
+        </div>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Start</button>
       </form>
     <h2>Sessions</h2>
