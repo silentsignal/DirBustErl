@@ -15,7 +15,7 @@ bust(URL, UserConfig) ->
 
 bust_async(Id, URL, UserConfig) ->
 	dirbusterl_storage:register_bust(Id, URL, UserConfig),
-	spawn(?MODULE, bust_monitor, [URL, UserConfig, Id]).
+	spawn_link(?MODULE, bust_monitor, [URL, UserConfig, Id]).
 
 bust_monitor(URL, UserConfig, Id) ->
 	{Pid, Ref} = spawn_monitor(?MODULE, bust_core, [URL, UserConfig, Id]),
