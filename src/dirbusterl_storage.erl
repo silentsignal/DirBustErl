@@ -67,7 +67,10 @@ get_busts() ->
 	Busts.
 
 bust_id_to_datetime(BustId) ->
-	{{Y, Mo, D}, {H, Mi, S}} = calendar:now_to_local_time(binary_to_term(BustId)),
+	timestamp_to_datetime(binary_to_term(BustId)).
+
+timestamp_to_datetime(TimeStamp) ->
+	{{Y, Mo, D}, {H, Mi, S}} = calendar:now_to_local_time(TimeStamp),
 	list_to_binary(io_lib:format("~4.10.0B-~2.10.0B-~2.10.0B ~2.10.0B:~2.10.0B:~2.10.0B",
 		[Y, Mo, D, H, Mi, S])).
 
