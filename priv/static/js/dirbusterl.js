@@ -184,7 +184,7 @@ function load_sessions_data(sessions) {
 				break;
 			default:
 				tr.className = "danger";
-				st.appendChild(document.createTextNode("internal error"));
+				st.appendChild(document.createTextNode("aborted"));
 				break;
 		}
 		tr.appendChild(st);
