@@ -57,43 +57,51 @@
     <div class="container">
       <form class="form-bust" id="bust">
         <h2 class="form-bust-heading">Start a DirBustErl session</h2>
-        <div class="input-group" id="ig_url">
-          <span class="input-group-addon">URL</span>
-          <input type="url" class="form-control" id="url" placeholder="http://example.com/" autofocus>
-        </div>
-        <div class="input-group">
-          <div class="input-group-btn">
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Wordlist <span class="caret"></span></button>
-            <ul class="dropdown-menu" id="wldropdown"></ul>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="input-group" id="ig_url">
+              <span class="input-group-addon">URL</span>
+              <input type="url" class="form-control" id="url" placeholder="http://example.com/" autofocus>
+            </div>
+            <div class="input-group">
+              <div class="input-group-btn">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Wordlist <span class="caret"></span></button>
+                <ul class="dropdown-menu" id="wldropdown"></ul>
+              </div>
+              <input type="text" class="form-control" id="wordlist">
+            </div>
           </div>
-          <input type="text" class="form-control" id="wordlist">
-        </div>
-        <div class="input-group">
-          <div class="input-group-btn">
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">URL restriction <span class="caret"></span></button>
-            <ul class="dropdown-menu" id="urdropdown"></ul>
+          <div class="col-md-6">
+            <div class="input-group">
+              <div class="input-group-btn">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">URL restriction <span class="caret"></span></button>
+                <ul class="dropdown-menu" id="urdropdown"></ul>
+              </div>
+              <input type="text" class="form-control" id="url_restriction">
+            </div>
+            <div class="input-group">
+              <div class="input-group-btn">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Postfix <span class="caret"></span></button>
+                <ul class="dropdown-menu" id="pfdropdown"></ul>
+              </div>
+              <input type="text" class="form-control" id="postfix">
+            </div>
           </div>
-          <input type="text" class="form-control" id="url_restriction">
         </div>
         <div class="input-group">
-          <div class="input-group-btn">
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Postfix <span class="caret"></span></button>
-            <ul class="dropdown-menu" id="pfdropdown"></ul>
-          </div>
-          <input type="text" class="form-control" id="postfix">
+          <label class="checkbox-inline">
+            <input type="checkbox" id="follow_dirs" checked> Recurse into subdirectories
+          </label>
+          <label class="checkbox-inline">
+            <input type="checkbox" id="follow_redirs" checked> Follow redirections
+          </label>
+          <label class="checkbox-inline">
+            <input type="checkbox" id="parse_body" checked> Parse response body
+          </label>
         </div>
-        <div class="input-group">
-            <label class="checkbox-inline">
-                <input type="checkbox" id="follow_dirs" checked> Recurse into subdirectories
-            </label>
-            <label class="checkbox-inline">
-                <input type="checkbox" id="follow_redirs" checked> Follow redirections
-            </label>
-            <label class="checkbox-inline">
-                <input type="checkbox" id="parse_body" checked> Parse response body
-            </label>
+        <div class="form-group" style="text-align: center;">
+          <button class="btn btn-lg btn-primary" type="submit">Start</button>
         </div>
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Start</button>
       </form>
     <h2>Sessions</h2>
     <div class="table-responsive">

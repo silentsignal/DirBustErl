@@ -3,11 +3,6 @@ body {
     padding-bottom: 40px;
     background-color: #eee;
 }
-.form-bust {
-    max-width: 640px;
-    padding: 15px;
-    margin: 0 auto;
-}
 .input-group {
     margin-top: 8px;
 }
