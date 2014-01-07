@@ -62,7 +62,7 @@ process_json_values([{Key, Value} | Values], URL, CfgAcc) when ?ALLOWED_KEY ->
     Config = case Value of
         true -> [EntryKey | CfgAcc];
         false -> CfgAcc;
-        _ -> [{EntryKey, process_json_value(Value)}]
+        _ -> [{EntryKey, process_json_value(Value)} | CfgAcc]
     end,
     process_json_values(Values, URL, Config).
 
