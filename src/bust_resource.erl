@@ -58,8 +58,13 @@ process_json_values([{<<"wordlist">>, WordList} | Values], URL, CfgAcc) ->
     WLfile = binary_to_list(filename:join(wordlist_resource:wordlist_dir(), WordList)),
     process_json_values(Values, URL, [{wordlist, WLfile} | CfgAcc]);
 process_json_values([{Key, Value} | Values], URL, CfgAcc) when ?ALLOWED_KEY ->
-    Entry = {list_to_atom(binary_to_list(Key)), process_json_value(Value)},
-    process_json_values(Values, URL, [Entry | CfgAcc]).
+    EntryKey = list_to_atom(binary_to_list(Key)),
+    Config = case Value of
+        true -> [EntryKey | CfgAcc];
+        false -> CfgAcc;
+        _ -> [{EntryKey, process_json_value(Value)}]
+    end,
+    process_json_values(Values, URL, Config).
 
 process_json_value({struct, Values}) ->
     {no_url, Processed} = process_json_values(Values),
