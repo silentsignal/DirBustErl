@@ -8,8 +8,10 @@ function start_bust(e) {
 	$.each(["follow_dirs", "follow_redirs", "parse_body"], function(n, e) {
 		if (document.getElementById(e).checked) data[e] = true;
 	});
-	var postfix = document.getElementById("postfix").value.replace(" ", "");
-	if (postfix) data.postfix = postfix.split(",");
+	$.each(["mangle_found", "postfix"], function(n, e) {
+		var value = document.getElementById(e).value.replace(" ", "");
+		if (value) data[e] = value.split(",");
+	});
 	$.ajax({
 		url: "/bust",
 		type: "POST",
@@ -86,6 +88,10 @@ function update_session_params(config) {
 		},
 		postfix: {
 			label: "Postfix",
+			type: "list"
+		},
+		mangle_found: {
+			label: "Mangling",
 			type: "list"
 		},
 		parse_body: {
@@ -323,11 +329,44 @@ function fill_postfixes() {
 	});
 }
 
+function mangling_selected(event) {
+	var rule = event.data;
+	var field = document.getElementById("mangle_found");
+	var idx = field.value.indexOf(rule);
+	if (idx != -1) {
+		if (idx == field.value.length - rule.length) {
+			field.value = field.value.replace(new RegExp(
+				"[, ]*" + rule.replace("\\", "\\\\").replace(".", "\\.")), "");
+		} else {
+			field.value = field.value.replace(new RegExp(
+				rule.replace("\\", "\\\\").replace(".", "\\.") + "[, ]*"), "");
+		}
+	} else {
+		if (field.value) rule = ", " + rule;
+		field.value += rule;
+	}
+	return false;
+}
+
+function fill_manglings() {
+	var ul = $("#mfdropdown").empty();
+	$("\\1~,.\\1.swp,\\1.old,\\1.orig".split(",")).each(function (n, rule) {
+		var li = document.createElement("li");
+		var a = document.createElement("a");
+		a.href = '#';
+		a.appendChild(document.createTextNode(rule));
+		$(a).on("click", null, rule, mangling_selected);
+		li.appendChild(a);
+		ul.append(li);
+	});
+}
+
 $(function() {
     $("#bust").submit(start_bust);
 	load_wordlists();
 	load_sessions();
 	fill_postfixes();
+	fill_manglings();
 	url_changed({target: {value: ""}});
 	$("#url").on("change", null, null, url_changed);
 });
