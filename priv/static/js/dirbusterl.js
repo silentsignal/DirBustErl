@@ -2,7 +2,7 @@ function start_bust(e) {
     e.preventDefault();
 	data = new Object();
 	$.each(["url", "wordlist", "url_restriction"], function(n, e) {
-		value = document.getElementById(e).value;
+		var value = document.getElementById(e).value;
 		if (value) data[e] = value;
 	});
 	$.each(["follow_dirs", "follow_redirs", "parse_body"], function(n, e) {
