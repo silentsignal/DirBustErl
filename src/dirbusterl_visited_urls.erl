@@ -29,7 +29,7 @@ terminate(normal, _) -> ok.
 
 check_url([], {true, _}) -> already_visited;
 check_url([], {false, Tree}) -> {updated, {true, Tree}};
-check_url([Part | Rest], {_, Parent} = Node) ->
+check_url([Part | Rest], {_, Parent}) ->
 	case gb_trees:lookup(Part, Parent) of
 		none ->
 			SubTree = lists:foldr(fun (E, A) -> {false, gb_trees:insert(E, A, gb_trees:empty())} end,
