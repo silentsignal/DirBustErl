@@ -90,7 +90,7 @@ burst_wordlist(BaseURL, State, Check) ->
 	end.
 
 spawn_worker(URL, State, Params) ->
-	case ets:insert_new(State#state.urls, {URL}) of
+	case dirbusterl_visited_urls:book_visit(State#state.urls, URL) of
 		true ->
 			Waiter = State#state.waiter,
 			waiter:worker_started(Waiter),

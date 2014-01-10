@@ -26,7 +26,7 @@ bust_monitor(URL, UserConfig, Id) ->
 	end.
 
 bust_core(URL, UserConfig, Id) ->
-	URLs = ets:new(dirbusterl_urls, []),
+	{ok, URLs} = dirbusterl_visited_urls:start_link(),
 	{Inputs, Config} = dirbusterl_config:process_user_config(UserConfig),
 	Waiter = waiter:start_link(Config, Id),
 	process_url_lists(Inputs, Id, Waiter, dirbusterl_config:filter_burst_config(Config)),
@@ -34,7 +34,7 @@ bust_core(URL, UserConfig, Id) ->
 	dirbusterl_server:bust(URL, dir,
 		#state{waiter=Waiter, wordlist=WordList, config=Config, urls=URLs, id=Id}),
 	dirbusterl_config:process_inputs_close(Inputs),
-	ets:delete(URLs).
+	dirbusterl_visited_urls:stop(URLs).
 
 process_url_lists([], _, _, _) -> ok;
 process_url_lists([{url_list, URLList} | Inputs], Id, Waiter, Config) ->
