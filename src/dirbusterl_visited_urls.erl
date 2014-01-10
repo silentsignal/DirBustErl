@@ -3,9 +3,15 @@
 -export([init/1, handle_call/3, terminate/2]). %% gen_server callbacks
 -behavior(gen_server).
 
+
+%% External API
+
 start_link() -> gen_server:start_link(?MODULE, [], []).
 
 book_visit(Pid, URL) -> gen_server:call(Pid, {book, URL}).
+
+
+%% Callbacks for gen_server
 
 init([]) -> {ok, {true, gb_trees:empty()}}.
 
@@ -15,6 +21,11 @@ handle_call({book, URL}, _From, Tree) ->
 		already_visited -> {reply, false, Tree};
 		{updated, NewTree} -> {reply, true, NewTree}
 	end.
+
+terminate(normal, _) -> ok.
+
+
+%% Internal functions
 
 check_url([], {true, _}) -> already_visited;
 check_url([], {false, Tree}) -> {updated, {true, Tree}};
@@ -30,5 +41,3 @@ check_url([Part | Rest], {_, Parent} = Node) ->
 				{updated, NewTree} -> {updated, {NodeStatus, gb_trees:update(Part, NewTree, Parent)}}
 			end
 	end.
-
-terminate(normal, _) -> ok.
