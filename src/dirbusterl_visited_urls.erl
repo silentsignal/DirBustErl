@@ -15,12 +15,12 @@ stop(Pid) -> gen_server:call(Pid, stop).
 
 %% Callbacks for gen_server
 
-init([]) -> {ok, {true, gb_trees:empty()}}.
+init([]) -> {ok, gb_trees:empty()}.
 
 handle_call(stop, _From, Tree) -> {stop, normal, ok, Tree};
 handle_call({book, URL}, _From, Tree) ->
 	Parts = binary:split(binary:replace(list_to_binary(URL), <<"://">>, <<"/">>), <<"/">>, [global]),
-	case check_url(Parts, Tree) of
+	case check_url(Parts, {true, Tree}) of
 		already_visited -> {reply, false, Tree};
 		{updated, NewTree} -> {reply, true, NewTree}
 	end.
@@ -37,10 +37,10 @@ check_url([Part | Rest], {_, Parent}) ->
 		none ->
 			SubTree = lists:foldr(fun (E, A) -> {false, gb_trees:insert(E, A, gb_trees:empty())} end,
 				{true, gb_trees:empty()}, Rest),
-			{updated, {false, gb_trees:insert(Part, SubTree, Parent)}};
+			{updated, gb_trees:insert(Part, SubTree, Parent)};
 		{value, {NodeStatus, _} = Child} ->
 			case check_url(Rest, Child) of
 				already_visited -> already_visited;
-				{updated, NewTree} -> {updated, {NodeStatus, gb_trees:update(Part, NewTree, Parent)}}
+				{updated, NewTree} -> {updated, gb_trees:update(Part, {NodeStatus, NewTree}, Parent)}
 			end
 	end.
