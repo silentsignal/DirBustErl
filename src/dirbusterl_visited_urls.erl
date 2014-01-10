@@ -25,7 +25,7 @@ handle_call({book, URL}, _From, Tree) ->
 		{updated, NewTree} -> {reply, true, NewTree}
 	end.
 
-terminate(normal, _) -> ok.
+terminate(_, _) -> ok.
 
 
 %% Internal functions
