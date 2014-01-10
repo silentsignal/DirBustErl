@@ -1,5 +1,5 @@
 -module(dirbusterl_visited_urls).
--export([start_link/0, book_visit/2]).
+-export([start_link/0, book_visit/2, stop/1]).
 -export([init/1, handle_call/3, terminate/2]). %% gen_server callbacks
 -behavior(gen_server).
 
@@ -10,11 +10,14 @@ start_link() -> gen_server:start_link(?MODULE, [], []).
 
 book_visit(Pid, URL) -> gen_server:call(Pid, {book, URL}).
 
+stop(Pid) -> gen_server:call(Pid, stop).
+
 
 %% Callbacks for gen_server
 
 init([]) -> {ok, {true, gb_trees:empty()}}.
 
+handle_call(stop, _From, Tree) -> {stop, normal, ok, Tree};
 handle_call({book, URL}, _From, Tree) ->
 	Parts = binary:split(binary:replace(list_to_binary(URL), <<"://">>, <<"/">>), <<"/">>, [global]),
 	case check_url(Parts, Tree) of
