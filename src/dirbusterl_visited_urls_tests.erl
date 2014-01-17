@@ -19,3 +19,10 @@ premature_stop_test() ->
 	?assert(?BV("http://localhost/foo")),
 	dirbusterl_visited_urls:stop(P),
 	?assertExit({noproc, _}, ?BV("http://localhost/foo")).
+
+return_test() ->
+	{ok, P} = dirbusterl_visited_urls:start_link(),
+	?assert(?BV("http://a/b")),
+	?assert(?BV("http://a")),
+	?assert(?BV("http://a/")),
+	dirbusterl_visited_urls:stop(P).
