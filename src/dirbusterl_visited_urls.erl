@@ -31,16 +31,17 @@ terminate(_, _) -> ok.
 %% Internal functions
 
 check_url([], {true, _}) -> already_visited;
-check_url([], {false, Tree}) -> {updated, {true, Tree}};
+check_url([], {false, _}) -> update_leaf;
 check_url([Part | Rest], {_, Parent}) ->
 	case gb_trees:lookup(Part, Parent) of
 		none ->
 			SubTree = lists:foldr(fun (E, A) -> {false, gb_trees:insert(E, A, gb_trees:empty())} end,
 				{true, gb_trees:empty()}, Rest),
 			{updated, gb_trees:insert(Part, SubTree, Parent)};
-		{value, {NodeStatus, _} = Child} ->
+		{value, {NodeStatus, NodeTree} = Child} ->
 			case check_url(Rest, Child) of
 				already_visited -> already_visited;
+				update_leaf -> {updated, gb_trees:update(Part, {true, NodeTree}, Parent)};
 				{updated, NewTree} -> {updated, gb_trees:update(Part, {NodeStatus, NewTree}, Parent)}
 			end
 	end.
