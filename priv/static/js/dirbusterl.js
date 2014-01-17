@@ -56,6 +56,13 @@ function load_session_findings(findings) {
 			icon.title = "directory";
 			code.appendChild(icon);
 		}
+		else if (finding.redir) {
+			code.appendChild(document.createTextNode(" "));
+			var icon = document.createElement("span");
+			icon.className = "glyphicon glyphicon-fast-forward";
+			icon.title = "redirection";
+			code.appendChild(icon);
+		}
 		a.href = finding.url;
 		url.appendChild(a);
 		tr.appendChild(code);
