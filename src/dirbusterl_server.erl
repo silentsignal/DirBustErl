@@ -46,7 +46,10 @@ server_loop(State) ->
 try_bust(URL, Mode, S) ->
 	case url_allowed(URL, S#state.config) of
 		true ->
-			bust(URL, Mode, S);
+			case dirbusterl_visited_urls:book_visit(S#state.parents, URL) of
+				true -> bust(URL, Mode, S);
+				false -> server_loop(S)
+			end;
 		false ->
 			server_loop(S)
 	end.

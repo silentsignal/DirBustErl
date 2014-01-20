@@ -27,13 +27,15 @@ bust_monitor(URL, UserConfig, Id) ->
 
 bust_core(URL, UserConfig, Id) ->
 	{ok, URLs} = dirbusterl_visited_urls:start_link(),
+	{ok, Parents} = dirbusterl_visited_urls:start_link(),
 	{Inputs, Config} = dirbusterl_config:process_user_config(UserConfig),
 	Waiter = waiter:start_link(Config, Id),
 	process_url_lists(Inputs, Id, Waiter, dirbusterl_config:filter_burst_config(Config)),
 	WordList = proplists:get_value(wordlist, Inputs),
 	dirbusterl_server:bust(URL, dir,
-		#state{waiter=Waiter, wordlist=WordList, config=Config, urls=URLs, id=Id}),
+		#state{waiter=Waiter, wordlist=WordList, config=Config, urls=URLs, id=Id, parents=Parents}),
 	dirbusterl_config:process_inputs_close(Inputs),
+	dirbusterl_visited_urls:stop(Parents),
 	dirbusterl_visited_urls:stop(URLs).
 
 process_url_lists([], _, _, _) -> ok;
