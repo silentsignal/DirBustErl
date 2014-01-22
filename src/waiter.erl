@@ -52,6 +52,5 @@ terminate(normal, S) -> S#state.server ! done.
 %% Internal functions
 
 dispatch_event(Event, Manager, Waiter) ->
-	Ref = make_ref(),
 	ok = gen_event:sync_notify(Manager, Event),
 	worker_finished(Waiter). %% UNLOCK
