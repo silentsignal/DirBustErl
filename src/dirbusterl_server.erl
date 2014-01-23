@@ -80,9 +80,8 @@ burst_wordlist(BaseURL, State, Check) ->
 				url_list -> spawn_worker(Postfix, State, Params);
 				_ ->
 					UserPF = ["" | ?getStateConfigList(postfix)],
-					[spawn_worker(
-					   BaseURL ++ ibrowse_lib:url_encode(Postfix) ++ PF,
-					   State, Params) || PF <- UserPF]
+					ExtendedBase = BaseURL ++ ibrowse_lib:url_encode(Postfix),
+					[spawn_worker(ExtendedBase ++ PF, State, Params) || PF <- UserPF]
 			end,
 			Check - 1;
 		eof -> ok
