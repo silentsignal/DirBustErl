@@ -1,1 +1,1 @@
--record(state, {waiter, wordlist, config, urls, id, parents}).
+-record(state, {waiter, wordlist, config, urls, id, parents, issued_reqs=0}).

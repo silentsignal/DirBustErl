@@ -7,16 +7,17 @@
 -define(BACKOFF_MSEC, 3000).
 
 -define(getStateConfigList(X), proplists:get_value(X, State#state.config, [])).
+-define(incrementReqs(S, V), (S)#state{issued_reqs=(S)#state.issued_reqs + (V)}).
 
 bust(URL, Mode, State) ->
-	spawn_worker(URL, State, ?getStateConfigList(http_cfg)),
+	NewReqs = spawn_worker(URL, State, ?getStateConfigList(http_cfg)) +
 	case Mode of
 		dir ->
 			file:position(State#state.wordlist, bof),
 			BaseURL = url_tools:ensure_ends_with_slash(URL),
 			burst_wordlist(BaseURL,
 				State#state{config=dirbusterl_config:filter_burst_config(State#state.config)});
-		_ -> ok
+		_ -> 0
 	end,
 	case url_tools:has_at_least_n_slashes(URL, 4) of
 		true ->
@@ -25,7 +26,7 @@ bust(URL, Mode, State) ->
 			dirbusterl:bust_dir(self(), lists:reverse(Dir));
 		false -> nop
 	end,
-	server_loop(State).
+	server_loop(?incrementReqs(State, NewReqs)).
 
 server_loop(State) ->
 	receive
@@ -70,25 +71,26 @@ burst_wordlist(BaseURL, State, 0) ->
 		_ -> burst_wordlist(BaseURL, State)
 	end;
 burst_wordlist(BaseURL, State, Check) ->
-	NewCheck = case file:read_line(State#state.wordlist) of
-		{ok, <<$#, _/binary>>} -> Check;
-		{ok, <<$\n>>} -> Check;
+	{NewReqs, NewCheck} = case file:read_line(State#state.wordlist) of
+		{ok, <<$#, _/binary>>} -> {0, Check};
+		{ok, <<$\n>>} -> {0, Check};
 		{ok, Line} ->
 			Postfix = binary_to_list(Line, 1, byte_size(Line) - 1),
 			Params = ?getStateConfigList(http_cfg),
-			case BaseURL of
+			NR = case BaseURL of
 				url_list -> spawn_worker(Postfix, State, Params);
 				_ ->
 					UserPF = ["" | ?getStateConfigList(postfix)],
 					ExtendedBase = BaseURL ++ ibrowse_lib:url_encode(Postfix),
-					[spawn_worker(ExtendedBase ++ PF, State, Params) || PF <- UserPF]
+					lists:sum([spawn_worker(ExtendedBase ++ PF, State, Params) || PF <- UserPF])
 			end,
-			Check - 1;
-		eof -> ok
+			{NR, Check - 1};
+		eof -> {0, ok}
 	end,
 	case NewCheck of
-		ok -> ok;
-		_ -> burst_wordlist(BaseURL, State, NewCheck)
+		ok -> State#state.issued_reqs + NewReqs;
+		_ ->
+			burst_wordlist(BaseURL, ?incrementReqs(State, NewReqs), NewCheck)
 	end.
 
 spawn_worker(URL, State, Params) ->
@@ -96,6 +98,7 @@ spawn_worker(URL, State, Params) ->
 		true ->
 			Waiter = State#state.waiter,
 			waiter:worker_started(Waiter),
-			spawn_link(worker, try_url, [URL, Waiter, Params]);
-		false -> already_requested
+			spawn_link(worker, try_url, [URL, Waiter, Params]),
+			1;
+		false -> 0
 	end.
