@@ -6,17 +6,25 @@
 -define(BACKOFF_INTERVAL, 64).
 -define(BACKOFF_MSEC, 3000).
 
+-define(FAIL_CASE_STRING, "thereIsNoWayThat-You-CanBeThere").
+
 -define(getStateConfigList(X), proplists:get_value(X, State#state.config, [])).
 -define(incrementReqs(S, V), (S)#state{issued_reqs=(S)#state.issued_reqs + (V)}).
 
 bust(URL, Mode, State) ->
-	NewReqs = spawn_worker(URL, State, ?getStateConfigList(http_cfg)) +
+	HttpCfg = ?getStateConfigList(http_cfg),
+	FailCase = case worker:try_url_sync(url_tools:urljoin(URL, ?FAIL_CASE_STRING), HttpCfg) of
+		not_found = NF -> NF;
+		{Result, _} = FC when Result =/= error -> FC
+	end,
+	FCState = State#state{fail_case=FailCase},
+	NewReqs = spawn_worker(URL, FCState, HttpCfg) +
 	case Mode of
 		dir ->
 			file:position(State#state.wordlist, bof),
 			BaseURL = url_tools:ensure_ends_with_slash(URL),
 			burst_wordlist(BaseURL,
-				State#state{config=dirbusterl_config:filter_burst_config(State#state.config)});
+				FCState#state{config=dirbusterl_config:filter_burst_config(State#state.config)});
 		_ -> 0
 	end,
 	case url_tools:has_at_least_n_slashes(URL, 4) of
@@ -98,7 +106,7 @@ spawn_worker(URL, State, Params) ->
 		true ->
 			Waiter = State#state.waiter,
 			waiter:worker_started(Waiter),
-			spawn_link(worker, try_url, [URL, Waiter, Params]),
+			spawn_link(worker, try_url, [URL, Waiter, Params, State#state.fail_case]),
 			1;
 		false -> 0
 	end.

@@ -88,7 +88,6 @@ TODO
  - detection of case-insensitive behavior (Windows servers)
  - detection of duplicate files (Apache MultiViews, symbolic links, etc.)
  - multi-node support
- - content analysis mode when failed attempts come back as 200
  - custom HTTP headers
 
   [1]: https://www.owasp.org/index.php/Category:OWASP_DirBuster_Project
