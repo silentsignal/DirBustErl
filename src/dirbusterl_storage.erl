@@ -80,7 +80,8 @@ timestamp_to_datetime(TimeStamp) ->
 
 bust_status(not_started) -> <<"not_started">>;
 bust_status({finished, _, normal}) -> <<"finished">>;
-bust_status({finished, _, Info}) -> list_to_binary(io_lib:format("~p", [Info]));
+bust_status({finished, _, Info}) ->
+	unicode:characters_to_binary((io_lib:format("~p", [Info])), latin1, utf8);
 bust_status(Pid) when is_pid(Pid) ->
 	case process_info(Pid) of
 		undefined -> <<"Process haven't finished but does not exist.">>;
