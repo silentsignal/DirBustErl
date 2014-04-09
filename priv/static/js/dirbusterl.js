@@ -9,8 +9,8 @@ function start_bust(e) {
 		if (document.getElementById(e).checked) data[e] = true;
 	});
 	$.each(["mangle_found", "postfix"], function(n, e) {
-		var value = document.getElementById(e).value.replace(" ", "");
-		if (value) data[e] = value.split(",");
+		var value = document.getElementById(e).value;
+		if (value) data[e] = value.split(/ *, */);
 	});
 	$.ajax({
 		url: "/bust",
