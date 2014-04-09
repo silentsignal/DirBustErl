@@ -62,6 +62,9 @@ ensure_started(App) ->
 start_link() ->
     ensure_started(inets),
     ensure_started(crypto),
+    ensure_started(asn1),
+    ensure_started(public_key),
+    ensure_started(ssl),
     ensure_started(mochiweb),
     ensure_started(ibrowse),
     mnesia:create_schema([node()]),
@@ -77,6 +80,9 @@ start_link() ->
 start() ->
     ensure_started(inets),
     ensure_started(crypto),
+    ensure_started(asn1),
+    ensure_started(public_key),
+    ensure_started(ssl),
     ensure_started(mochiweb),
     ensure_started(ibrowse),
     mnesia:create_schema([node()]),
@@ -95,6 +101,9 @@ stop() ->
     application:stop(mnesia),
     application:stop(ibrowse),
     application:stop(mochiweb),
+    application:stop(ssl),
+    application:stop(public_key),
+    application:stop(asn1),
     application:stop(crypto),
     application:stop(inets),
     Res.
