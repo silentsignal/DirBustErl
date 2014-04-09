@@ -40,18 +40,18 @@ from_json(ReqData, State) ->
     end,
     {true, ReqData, State}.
 
--define(AK(X), Key =:= X).
+-define(AK(X), Key =:= <<X>>).
 -define(ALLOWED_KEY,
-        ?AK(<<"follow_dirs">>) ;
-        ?AK(<<"follow_redirs">>) ;
-        ?AK(<<"parse_body">>) ;
-        ?AK(<<"url_restriction">>) ;
-        ?AK(<<"postfix">>) ;
-        ?AK(<<"mangle_found">>) ;
-        ?AK(<<"http_cfg">>) ;
-        ?AK(<<"proxy_host">>) ;
-        ?AK(<<"proxy_port">>) ; %% TODO add more ibrowse atoms
-        ?AK(<<"url_list">>)).
+        ?AK("follow_dirs") ;
+        ?AK("follow_redirs") ;
+        ?AK("parse_body") ;
+        ?AK("url_restriction") ;
+        ?AK("postfix") ;
+        ?AK("mangle_found") ;
+        ?AK("http_cfg") ;
+        ?AK("proxy_host") ;
+        ?AK("proxy_port") ; %% TODO add more ibrowse atoms
+        ?AK("url_list")).
 
 process_json_values(Values) -> process_json_values(Values, no_url, []).
 process_json_values([], URL, CfgAcc) -> {URL, CfgAcc};
