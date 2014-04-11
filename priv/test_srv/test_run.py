@@ -27,7 +27,7 @@ class TestDirBustErl(TestCase):
         for _ in xrange(500):
             sleep(0.1)
             results = self.session.get(BUST_RESOURCE_URL).json()
-            result = next(result for result in results if result['id'] == bust_id)
+            result = next(r for r in results if r['id'] == bust_id)
             if result['status'] == 'finished':
                 break
         else:
