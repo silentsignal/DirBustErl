@@ -61,14 +61,16 @@ get_busts() ->
 			{id, base64:encode(R#dirbusterl_bust.id)},
 			{started, bust_id_to_datetime(R#dirbusterl_bust.id)},
 			{status, bust_status(R#dirbusterl_bust.server_pid)},
-			{ended, if is_tuple(R#dirbusterl_bust.server_pid),
-					   element(1, R#dirbusterl_bust.server_pid) =:= finished ->
-						   timestamp_to_datetime(element(2, R#dirbusterl_bust.server_pid));
-					   true -> null end},
+			{ended, decode_ended(R#dirbusterl_bust.server_pid)},
 			{url, R#dirbusterl_bust.url} | config_value_to_json(R#dirbusterl_bust.config)]
 			|| R <- mnesia:table(dirbusterl_bust)]))
 	end),
 	Busts.
+
+decode_ended(ServerPid) when is_tuple(ServerPid),
+		element(1, ServerPid) =:= finished ->
+	timestamp_to_datetime(element(2, ServerPid));
+decode_ended(_) -> null.
 
 bust_id_to_datetime(BustId) ->
 	timestamp_to_datetime(binary_to_term(BustId)).
