@@ -22,10 +22,7 @@ class TestDirBustErl(TestCase):
                 follow_dirs=True, follow_redirs=True, parse_body=True)
         self.assertEquals(bust.status_code, requests.codes.created)
         self.assertTrue(bust.url.startswith(DIRB_ROOT))
-        return bust.headers['location']
-
-    def test_smoke(self):
-        bust_url = self.simple_bust(TEST_ROOT)
+        bust_url = bust.headers['location']
         _, bust_id = bust_url.rsplit('/', 1)
         for _ in xrange(500):
             sleep(0.1)
@@ -35,22 +32,15 @@ class TestDirBustErl(TestCase):
                 break
         else:
             self.fail("Bust didn't finish within 5 seconds")
-        findings = self.session.get(bust_url).json()
+        return self.session.get(bust_url).json()
+
+    def test_smoke(self):
+        findings = self.simple_bust(TEST_ROOT)
         self.assertEquals(findings,
                 [{'url': TEST_ROOT, 'code': requests.codes.ok}])
 
     def test_broken404(self):
-        bust_url = self.simple_bust(TEST_ROOT + 'broken404/')
-        _, bust_id = bust_url.rsplit('/', 1)
-        for _ in xrange(500):
-            sleep(0.1)
-            results = self.session.get(BUST_RESOURCE_URL).json()
-            result = next(r for r in results if r['id'] == bust_id)
-            if result['status'] == 'finished':
-                break
-        else:
-            self.fail("Bust didn't finish within 5 seconds")
-        findings = self.session.get(bust_url).json()
+        findings = self.simple_bust(TEST_ROOT + 'broken404/')
         self.assertEquals(findings, [])
 
 
