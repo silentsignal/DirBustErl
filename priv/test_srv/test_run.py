@@ -36,7 +36,8 @@ class TestDirBustErl(TestCase):
         else:
             self.fail("Bust didn't finish within 5 seconds")
         findings = self.session.get(bust_url).json()
-        self.assertEquals(findings, [{'url': TEST_ROOT, 'code': requests.codes.ok}])
+        self.assertEquals(findings,
+                [{'url': TEST_ROOT, 'code': requests.codes.ok}])
 
 
 if __name__ == '__main__':
