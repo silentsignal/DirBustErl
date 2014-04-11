@@ -77,7 +77,8 @@ bust_id_to_datetime(BustId) ->
 
 timestamp_to_datetime(TimeStamp) ->
 	{{Y, Mo, D}, {H, Mi, S}} = calendar:now_to_local_time(TimeStamp),
-	list_to_binary(io_lib:format("~4.10.0B-~2.10.0B-~2.10.0B ~2.10.0B:~2.10.0B:~2.10.0B",
+	list_to_binary(io_lib:format(
+		"~4.10.0B-~2.10.0B-~2.10.0B ~2.10.0B:~2.10.0B:~2.10.0B",
 		[Y, Mo, D, H, Mi, S])).
 
 bust_status(not_started) -> <<"not_started">>;
