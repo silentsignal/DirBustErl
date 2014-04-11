@@ -39,6 +39,20 @@ class TestDirBustErl(TestCase):
         self.assertEquals(findings,
                 [{'url': TEST_ROOT, 'code': requests.codes.ok}])
 
+    def test_broken404(self):
+        bust_url = self.simple_bust(TEST_ROOT + 'broken404/')
+        _, bust_id = bust_url.rsplit('/', 1)
+        for _ in xrange(500):
+            sleep(0.1)
+            results = self.session.get(BUST_RESOURCE_URL).json()
+            result = next(r for r in results if r['id'] == bust_id)
+            if result['status'] == 'finished':
+                break
+        else:
+            self.fail("Bust didn't finish within 5 seconds")
+        findings = self.session.get(bust_url).json()
+        self.assertEquals(findings, [])
+
 
 if __name__ == '__main__':
     main()
