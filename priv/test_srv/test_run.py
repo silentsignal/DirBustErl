@@ -17,12 +17,15 @@ class TestDirBustErl(TestCase):
         return self.session.post(BUST_RESOURCE_URL, data=json.dumps(params),
                 headers={'Content-Type': 'application/json'})
 
-    def test_smoke(self):
-        bust = self.start_bust(url=TEST_ROOT, wordlist='TEST.txt',
+    def simple_bust(self, url):
+        bust = self.start_bust(url=url, wordlist='TEST.txt',
                 follow_dirs=True, follow_redirs=True, parse_body=True)
         self.assertEquals(bust.status_code, requests.codes.created)
         self.assertTrue(bust.url.startswith(DIRB_ROOT))
-        bust_url = bust.headers['location']
+        return bust.headers['location']
+
+    def test_smoke(self):
+        bust_url = self.simple_bust(TEST_ROOT)
         _, bust_id = bust_url.rsplit('/', 1)
         for _ in xrange(500):
             sleep(0.1)
