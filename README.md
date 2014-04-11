@@ -21,6 +21,7 @@ Dependencies
  - Recent Erlang distribution
  - `ibrowse` https://github.com/cmullaparthi/ibrowse (fetched automatically)
  - RFC 1808 http://tools.ietf.org/rfc/rfc1808.txt (for unit tests only, fetched automatically)
+ - Python 2.6+, Requests, Flask (for server tests only)
 
 Building
 --------
