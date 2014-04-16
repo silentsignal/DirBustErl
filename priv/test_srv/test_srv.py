@@ -20,5 +20,9 @@ def broken404(param):
 def mangling():
     return 'Mangling is useful'
 
+@app.route('/postfix/bar.html')
+def postfix():
+    return '<html><body>Welcome to the bar!</body></html>'
+
 if __name__ == '__main__':
     app.run()

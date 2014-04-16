@@ -55,6 +55,14 @@ class TestDirBustErl(TestCase):
                 for p in ('', 'foo', '.foo.swp')]
         self.assertEquals(sorted(findings), sorted(expected))
 
+    def test_postfix(self):
+        url = TEST_ROOT + 'postfix/'
+        bust = self.start_bust(url=url, wordlist='TEST.txt',
+                postfix=['.html', '.php'], url_restriction='^' + url)
+        findings = self.get_bust_results(bust)
+        self.assertEquals(findings,
+                [{'url': url + 'bar.html', 'code': requests.codes.ok}])
+
 
 if __name__ == '__main__':
     main()
