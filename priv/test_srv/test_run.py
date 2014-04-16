@@ -46,6 +46,15 @@ class TestDirBustErl(TestCase):
         findings = self.simple_bust(TEST_ROOT + 'broken404/')
         self.assertEquals(findings, [])
 
+    def test_mangling(self):
+        url = TEST_ROOT + 'mangling/'
+        bust = self.start_bust(url=url, wordlist='TEST.txt',
+                mangle_found=[r'.\1.swp', r'\1~'], url_restriction='^' + url)
+        findings = self.get_bust_results(bust)
+        expected = [{'url': url + p, 'code': requests.codes.ok}
+                for p in ('', 'foo', '.foo.swp')]
+        self.assertEquals(sorted(findings), sorted(expected))
+
 
 if __name__ == '__main__':
     main()

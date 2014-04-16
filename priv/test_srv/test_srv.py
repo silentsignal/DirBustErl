@@ -13,5 +13,12 @@ def home():
 def broken404(param):
     return 'I answer with 200 to everything!'
 
+@app.route('/mangling/')
+@app.route('/mangling/foo')
+@app.route('/mangling/.foo.swp')
+@app.route('/mangling/.bar.swp')
+def mangling():
+    return 'Mangling is useful'
+
 if __name__ == '__main__':
     app.run()
