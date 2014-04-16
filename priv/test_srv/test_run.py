@@ -20,6 +20,9 @@ class TestDirBustErl(TestCase):
     def simple_bust(self, url):
         bust = self.start_bust(url=url, wordlist='TEST.txt',
                 follow_dirs=True, follow_redirs=True, parse_body=True)
+        return self.get_bust_results(bust)
+
+    def get_bust_results(self, bust):
         self.assertEquals(bust.status_code, requests.codes.created)
         self.assertTrue(bust.url.startswith(DIRB_ROOT))
         bust_url = bust.headers['location']
