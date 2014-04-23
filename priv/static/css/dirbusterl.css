@@ -12,3 +12,8 @@ button[type=submit] {
 .bust_id {
     font-family: monospace;
 }
+#forkme {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
