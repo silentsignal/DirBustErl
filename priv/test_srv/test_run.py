@@ -35,7 +35,9 @@ class TestDirBustErl(TestCase):
                 break
         else:
             self.fail("Bust didn't finish within 5 seconds")
-        return self.session.get(bust_url).json()
+        results = self.session.get(bust_url).json()
+        self.session.delete(bust_url)
+        return results
 
     def test_smoke(self):
         findings = self.simple_bust(TEST_ROOT)
