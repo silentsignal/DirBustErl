@@ -2,13 +2,12 @@
 -export([init/1, content_types_provided/2, delete_resource/2, to_json/2, content_types_accepted/2, allowed_methods/2, from_json/2, post_is_create/2, create_path/2]).
 
 -include_lib("webmachine/include/webmachine.hrl").
--define(CT_JSON, {"application/json", to_json}).
 
 
 init([]) -> {ok, undefined}.
 
 content_types_provided(ReqData, State) ->
-    {[?CT_JSON], ReqData, State}.
+    {[{"application/json", to_json}], ReqData, State}.
 
 content_types_accepted(ReqData, State) ->
     {[{"application/json", from_json}], ReqData, State}.
