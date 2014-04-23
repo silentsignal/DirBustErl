@@ -114,6 +114,7 @@ config_to_json({Atom, Value}) ->
 config_to_json(Atom) when is_atom(Atom) ->
 	{Atom, true}.
 
+config_value_to_json([] = EmptyList) -> EmptyList;
 config_value_to_json([Elem | _] = Value) when is_integer(Elem) ->
 	list_to_binary(Value);
 config_value_to_json([Elem | _] = Value) when is_list(Elem) ->

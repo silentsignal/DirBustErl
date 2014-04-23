@@ -148,7 +148,7 @@ function update_session_params(config) {
 				}
 				break;
 			case "list":
-				if (config_value == undefined) {
+				if (config_value == undefined || config_value.length == 0) {
 					contents = document.createTextNode("(none)");
 					value.className = "text-muted";
 				} else {
