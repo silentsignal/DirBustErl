@@ -1,5 +1,5 @@
 -module(bust_resource).
--export([init/1, content_types_provided/2, to_json/2, content_types_accepted/2, allowed_methods/2, from_json/2, post_is_create/2, create_path/2]).
+-export([init/1, content_types_provided/2, delete_resource/2, to_json/2, content_types_accepted/2, allowed_methods/2, from_json/2, post_is_create/2, create_path/2]).
 
 -include_lib("webmachine/include/webmachine.hrl").
 -define(CT_JSON, {"application/json", to_json}).
@@ -14,13 +14,17 @@ content_types_accepted(ReqData, State) ->
     {[{"application/json", from_json}], ReqData, State}.
 
 allowed_methods(ReqData, State) ->
-    {['HEAD', 'GET', 'POST', 'PUT'], ReqData, State}.
+    {['HEAD', 'GET', 'POST', 'PUT', 'DELETE'], ReqData, State}.
 
 post_is_create(ReqData, State) ->
     {true, ReqData, State}.
 
 create_path(R, S) ->
     {base64:encode_to_string(dirbusterl_storage:generate_bust_id()), R, S}.
+
+delete_resource(ReqData, State) ->
+    BustId = base64:decode(wrq:disp_path(ReqData)),
+    {dirbusterl_storage:delete_bust(BustId), ReqData, State}.
 
 to_json(ReqData, State) ->
     Payload = case wrq:disp_path(ReqData) of

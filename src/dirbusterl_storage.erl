@@ -1,5 +1,5 @@
 -module(dirbusterl_storage).
--export([init_schema/0, generate_bust_id/0, register_bust/3, store_finding/3, get_findings/1, set_server_pid/2, get_server_pid/1, get_busts/0]).
+-export([init_schema/0, generate_bust_id/0, register_bust/3, delete_bust/1, store_finding/3, get_findings/1, set_server_pid/2, get_server_pid/1, get_busts/0]).
 
 -record(dirbusterl_bust, {id, url, config, server_pid=not_started}).
 -record(dirbusterl_finding, {bust_id_url, metadata}).
@@ -12,6 +12,15 @@ register_bust(Id, URL, Config) ->
 	{atomic, ok} = mnesia:transaction(fun () ->
 		mnesia:write(#dirbusterl_bust{id=Id, url=list_to_binary(URL), config=Config})
 	end).
+
+delete_bust(BustId) ->
+    {atomic, Result} = mnesia:transaction(fun () ->
+        mnesia:delete({dirbusterl_bust, BustId}),
+        lists:foreach(fun mnesia:delete_object/1, mnesia:match_object(
+            #dirbusterl_finding{bust_id_url={BustId, '_'}, metadata='_'})),
+        true %% TODO handle busts that are still running
+    end),
+    Result.
 
 init_schema() ->
 	case mnesia:create_table(dirbusterl_bust, [
