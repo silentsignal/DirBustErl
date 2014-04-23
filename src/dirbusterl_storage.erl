@@ -67,7 +67,7 @@ get_server_pid(BustId) ->
 get_busts() ->
 	{atomic, Busts} = mnesia:transaction(fun() ->
 		qlc:e(qlc:q([[
-			{id, base64:encode(R#dirbusterl_bust.id)},
+			{id, usb64:encode(R#dirbusterl_bust.id)},
 			{started, bust_id_to_datetime(R#dirbusterl_bust.id)},
 			{status, bust_status(R#dirbusterl_bust.server_pid)},
 			{ended, decode_ended(R#dirbusterl_bust.server_pid)},

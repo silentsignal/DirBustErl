@@ -19,21 +19,21 @@ post_is_create(ReqData, State) ->
     {true, ReqData, State}.
 
 create_path(R, S) ->
-    {base64:encode_to_string(dirbusterl_storage:generate_bust_id()), R, S}.
+    {usb64:encode_to_string(dirbusterl_storage:generate_bust_id()), R, S}.
 
 delete_resource(ReqData, State) ->
-    BustId = base64:decode(wrq:disp_path(ReqData)),
+    BustId = usb64:decode(wrq:disp_path(ReqData)),
     {dirbusterl_storage:delete_bust(BustId), ReqData, State}.
 
 to_json(ReqData, State) ->
     Payload = case wrq:disp_path(ReqData) of
         "" -> dirbusterl_storage:get_busts();
-        BustId -> dirbusterl_storage:get_findings(base64:decode(BustId))
+        BustId -> dirbusterl_storage:get_findings(usb64:decode(BustId))
     end,
     {mochijson2:encode(Payload), ReqData, State}.
 
 from_json(ReqData, State) ->
-    Id = base64:decode(wrq:disp_path(ReqData)),
+    Id = usb64:decode(wrq:disp_path(ReqData)),
     {struct, Values} = mochijson2:decode(wrq:req_body(ReqData)),
     case {Values, dirbusterl_storage:get_server_pid(Id)} of
         {[{<<"status">>, <<"aborted">>}], Pid} when is_pid(Pid) -> exit(Pid, user_abortion);
