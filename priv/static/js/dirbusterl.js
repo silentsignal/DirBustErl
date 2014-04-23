@@ -36,7 +36,17 @@ function session_detail_clicked(event) {
 }
 
 function update_session_findings(id) {
-	$.getJSON("/bust/" + id, null, load_session_findings);
+	$.getJSON("/bust/" + id, null, load_session_findings).fail(session_fail);
+}
+
+function session_fail(jqxhr, textStatus, error) {
+	var tbody = $("#detailsModal .detailsFindings tbody").empty();
+	var tr = document.createElement("tr");
+	var msg = document.createElement("td");
+	msg.colSpan = 2;
+	msg.appendChild(document.createTextNode("Couldn't load results: " + error));
+	tr.appendChild(msg);
+	tbody.append(tr);
 }
 
 function load_session_findings(findings) {
