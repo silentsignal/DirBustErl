@@ -10,10 +10,12 @@
 
 -define(getStateConfigList(X), proplists:get_value(X, State#state.config, [])).
 -define(incrementReqs(S, V), (S)#state{issued_reqs=(S)#state.issued_reqs + (V)}).
+-define(getHeaders(), proplists:get_value(headers, State#state.config, [])).
 
 bust(URL, Mode, State) ->
 	HttpCfg = ?getStateConfigList(http_cfg),
-	FailCase = case worker:try_url_sync(url_tools:urljoin(URL, ?FAIL_CASE_STRING), HttpCfg) of
+	FailCase = case worker:try_url_sync(url_tools:urljoin(URL, ?FAIL_CASE_STRING),
+		    ?getHeaders(), HttpCfg) of
 		not_found = NF -> NF;
 		{Result, _} = FC when Result =/= error -> FC
 	end,
@@ -106,7 +108,8 @@ spawn_worker(URL, State, Params) ->
 		true ->
 			Waiter = State#state.waiter,
 			waiter:worker_started(Waiter),
-			spawn_link(worker, try_url, [URL, Waiter, Params, State#state.fail_case]),
+			spawn_link(worker, try_url, [URL, Waiter, ?getHeaders(),
+				Params, State#state.fail_case]),
 			1;
 		false -> 0
 	end.

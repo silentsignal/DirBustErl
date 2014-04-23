@@ -57,6 +57,15 @@ class TestDirBustErl(TestCase):
                 for p in ('', 'foo', '.foo.swp')]
         self.assertEquals(sorted(findings), sorted(expected))
 
+    def test_headers(self):
+        url = TEST_ROOT + 'header-req'
+        for headers, expected in [([], []), ([['X-Files', 'TrustNo1']],
+                [{'url': url, 'code': requests.codes.ok}])]:
+            bust = self.start_bust(url=url, wordlist='TEST.txt',
+                    url_restriction='^' + url, headers=headers)
+            findings = self.get_bust_results(bust)
+            self.assertEquals(findings, expected)
+
     def test_postfix(self):
         url = TEST_ROOT + 'postfix/'
         bust = self.start_bust(url=url, wordlist='TEST.txt',

@@ -57,6 +57,7 @@ There's currently one entry point:
  - `{http_cfg, Params}` set `ibrowse` parameters (proxy, authentication) directly, example: `{http_cfg, [{proxy_host, "localhost"}, {proxy_port, 8081}]}`
  - `{wordlist, FileName}` read words from this file (mandatory parameter, only the first occurrence is used), example: `{wordlist, "DirBuster-0.12/directory-list-2.3-small.txt"}`
  - `{url_list, FileName}` read URLs from this file (zero or more can be used), example: `{url_list, "burp-urls.txt"}`
+ - `{headers, List}` append HTTP headers to each request, example: `{headers, [{"User-Agent", "Agent Smith"}, {"Authorization", "..."}]}`
 
 ### Input file formats
 
@@ -89,7 +90,6 @@ TODO
  - detection of case-insensitive behavior (Windows servers)
  - detection of duplicate files (Apache MultiViews, symbolic links, etc.)
  - multi-node support
- - custom HTTP headers
 
   [1]: https://www.owasp.org/index.php/Category:OWASP_DirBuster_Project
   [2]: https://code.google.com/p/fuzzdb/source/browse/trunk/discovery/FilenameBruteforce/Extensions.Backup.fuzz.txt

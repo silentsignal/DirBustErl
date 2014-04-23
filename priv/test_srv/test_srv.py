@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from flask import Flask
+from flask import Flask, request, abort
 
 app = Flask(__name__)
 
@@ -19,6 +19,13 @@ def broken404(param):
 @app.route('/mangling/.bar.swp')
 def mangling():
     return 'Mangling is useful'
+
+@app.route('/header-req')
+def header_req():
+    if request.headers.get('X-Files') == 'TrustNo1':
+        return 'The truth is out there'
+    else:
+        abort(404)
 
 @app.route('/postfix/bar.html')
 def postfix():

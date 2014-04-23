@@ -109,6 +109,8 @@ config_to_json({wordlist, Value}) ->
         false -> VB
     end,
     {wordlist, Payload};
+config_to_json({headers, Tuples}) ->
+	{headers, config_value_to_json(lists:map(fun tuple_to_list/1, Tuples))};
 config_to_json({Atom, Value}) ->
 	{Atom, config_value_to_json(Value)};
 config_to_json(Atom) when is_atom(Atom) ->

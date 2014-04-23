@@ -111,6 +111,10 @@ function update_session_params(config) {
 			label: "Mangling",
 			type: "list"
 		},
+		headers: {
+			label: "Headers",
+			type: "list"
+		},
 		parse_body: {
 			label: "Parse response body",
 			type: "flag"
@@ -156,6 +160,7 @@ function update_session_params(config) {
 					$(config_value).each(function(n, item) {
 						if (n) contents.appendChild(document.createTextNode(", "));
 						code = document.createElement("code");
+						if (name == "headers") item = item[0] + ": " + item[1];
 						code.appendChild(document.createTextNode(item));
 						contents.appendChild(code);
 					});

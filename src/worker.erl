@@ -1,23 +1,23 @@
 -module(worker).
--export([try_url/4, try_url_sync/2]).
+-export([try_url/5, try_url_sync/3]).
 
 -include_lib("eunit/include/eunit.hrl").
 
 -define(TRIES, 8).
 
-try_url(URL, Waiter, Params, FailCase) ->
-	case try_url_sync(URL, Params) of
+try_url(URL, Waiter, Headers, Params, FailCase) ->
+	case try_url_sync(URL, Headers, Params) of
 		not_found -> waiter:worker_finished(Waiter);
 		FailCase -> waiter:worker_finished(Waiter);
 		{Result, Payload} -> waiter:worker_finished(Waiter, URL, Result, Payload)
 	end.
 
-try_url_sync(URL, Params) -> try_url_sync(URL, Params, head).
-try_url_sync(URL, Params, Method) -> try_url_sync(URL, Params, Method, ?TRIES).
-try_url_sync(URL, Params, Method, N) ->
-	case ibrowse:send_req(URL, [], Method, [], Params, infinity) of
+try_url_sync(URL, Headers, Params) -> try_url_sync(URL, Headers, Params, head).
+try_url_sync(URL, Headers, Params, Method) -> try_url_sync(URL, Headers, Params, Method, ?TRIES).
+try_url_sync(URL, ReqHeaders, Params, Method, N) ->
+	case ibrowse:send_req(URL, ReqHeaders, Method, [], Params, infinity) of
 		{ok, "404", _, _} -> not_found;
-		{ok, _, _, _} when Method =:= head -> try_url_sync(URL, Params, get);
+		{ok, _, _, _} when Method =:= head -> try_url_sync(URL, ReqHeaders, Params, get);
 		{ok, Code, Headers, Body} ->
 			Payload = case get_location(Headers) of
 				no_location -> Body;
@@ -28,8 +28,8 @@ try_url_sync(URL, Params, Method, N) ->
 					end
 			end,
 			{Code, Payload};
-		{error, retry_later} -> timer:sleep(100), try_url_sync(URL, Params, Method, N);
-		{error, _} when N > 0 -> try_url_sync(URL, Params, Method, N - 1);
+		{error, retry_later} -> timer:sleep(100), try_url_sync(URL, ReqHeaders, Params, Method, N);
+		{error, _} when N > 0 -> try_url_sync(URL, ReqHeaders, Params, Method, N - 1);
 		{error, _} = Error -> Error
 	end.
 
