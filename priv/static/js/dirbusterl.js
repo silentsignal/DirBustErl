@@ -12,6 +12,14 @@ function start_bust(e) {
 		var value = document.getElementById(e).value;
 		if (value) data[e] = value.split(/ *, */);
 	});
+	var headers = $("#bustHeaders tbody tr");
+	if (headers.length != 0) {
+		data["headers"] = Array();
+		headers.each(function(n, e) {
+			var header = $("td", e);
+			data["headers"].push([header[0].innerHTML, header[1].innerHTML]);
+		});
+	}
 	$.ajax({
 		url: "/bust",
 		type: "POST",
@@ -383,6 +391,30 @@ function fill_manglings() {
 	});
 }
 
+function remove_bust_header(event) {
+	event.data.remove();
+}
+
+function add_bust_header() {
+	var key = document.getElementById("bustHeaderKey").value;
+	var value = document.getElementById("bustHeaderValue").value;
+	var row = document.createElement("tr");
+	var key_col = document.createElement("td");
+	var value_col = document.createElement("td");
+	var btn_col = document.createElement("td");
+	var button = document.createElement("a");
+	key_col.appendChild(document.createTextNode(key));
+	value_col.appendChild(document.createTextNode(value));
+	button.className = "btn btn-danger btn-xs";
+	button.appendChild(document.createTextNode("Remove"));
+	$(button).on("click", null, row, remove_bust_header);
+	btn_col.appendChild(button);
+	row.appendChild(key_col);
+	row.appendChild(value_col);
+	row.appendChild(btn_col);
+	$("#bustHeaders tbody").append(row);
+}
+
 $(function() {
 		$("#bust").submit(start_bust);
 	load_wordlists();
@@ -391,4 +423,5 @@ $(function() {
 	fill_manglings();
 	url_changed({target: {value: ""}});
 	$("#url").on("change", null, null, url_changed);
+	$("#bustHeaderAdd").on("click", null, null, add_bust_header);
 });

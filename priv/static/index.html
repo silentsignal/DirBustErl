@@ -61,61 +61,90 @@
       </a>
       <form class="form-bust" id="bust">
         <h2 class="form-bust-heading">Start a DirBustErl session</h2>
-        <div class="row">
-          <div class="col-md-6">
-            <div class="input-group" id="ig_url">
-              <span class="input-group-addon">URL</span>
-              <input type="url" class="form-control" id="url" placeholder="http://example.com/" autofocus>
-            </div>
-            <div class="input-group">
-              <div class="input-group-btn">
-                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Wordlist <span class="caret"></span></button>
-                <ul class="dropdown-menu" id="wldropdown"></ul>
+        <ul class="nav nav-pills">
+          <li class="active"><a href="#bustBasic" data-toggle="tab">Basic settings</a></li>
+          <li><a href="#bustHeaders" data-toggle="tab">HTTP headers</a></li>
+        </ul>
+        <div class="tab-content">
+          <div id="bustBasic" class="tab-pane active">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="input-group" id="ig_url">
+                  <span class="input-group-addon">URL</span>
+                  <input type="url" class="form-control" id="url" placeholder="http://example.com/" autofocus>
+                </div>
+                <div class="input-group">
+                  <div class="input-group-btn">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Wordlist <span class="caret"></span></button>
+                    <ul class="dropdown-menu" id="wldropdown"></ul>
+                  </div>
+                  <input type="text" class="form-control" id="wordlist" placeholder="enter filename or select from list">
+                </div>
               </div>
-              <input type="text" class="form-control" id="wordlist" placeholder="enter filename or select from list">
+              <div class="col-md-6">
+                <div class="input-group">
+                  <div class="input-group-btn">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">URL restriction <span class="caret"></span></button>
+                    <ul class="dropdown-menu" id="urdropdown"></ul>
+                  </div>
+                  <input type="text" class="form-control" id="url_restriction" placeholder="regular expression (PCRE)">
+                </div>
+                <div class="input-group">
+                  <div class="input-group-btn">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Postfix <span class="caret"></span></button>
+                    <ul class="dropdown-menu" id="pfdropdown"></ul>
+                  </div>
+                  <input type="text" class="form-control" id="postfix" placeholder="separated by commas, spaces ignored">
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="input-group">
+                  <div class="input-group-btn">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Mangling <span class="caret"></span></button>
+                    <ul class="dropdown-menu" id="mfdropdown"></ul>
+                  </div>
+                  <input type="text" class="form-control" id="mangle_found" placeholder="separated by commas, spaces ignored">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="input-group">
+                  <label class="checkbox-inline">
+                    <input type="checkbox" id="follow_dirs" checked> Recurse into subdirectories
+                  </label>
+                  <label class="checkbox-inline">
+                    <input type="checkbox" id="follow_redirs" checked> Follow redirections
+                  </label>
+                  <label class="checkbox-inline">
+                    <input type="checkbox" id="parse_body" checked> Parse response body
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="col-md-6">
-            <div class="input-group">
-              <div class="input-group-btn">
-                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">URL restriction <span class="caret"></span></button>
-                <ul class="dropdown-menu" id="urdropdown"></ul>
+          <div id="bustHeaders" class="tab-pane">
+            <table class="table detailsFindings table-condensed">
+              <thead>
+                <tr>
+                  <th>Header</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+            <div class="form-inline">
+              <div class="form-group">
+                <label class="sr-only" for="bustHeaderKey">Header</label>
+                <input type="text" class="form-control" id="bustHeaderKey" placeholder="Header">
               </div>
-              <input type="text" class="form-control" id="url_restriction" placeholder="regular expression (PCRE)">
-            </div>
-            <div class="input-group">
-              <div class="input-group-btn">
-                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Postfix <span class="caret"></span></button>
-                <ul class="dropdown-menu" id="pfdropdown"></ul>
+              <div class="form-group">
+                <label class="sr-only" for="bustHeaderValue">Value</label>
+                <input type="text" class="form-control" id="bustHeaderValue" placeholder="Value">
               </div>
-              <input type="text" class="form-control" id="postfix" placeholder="separated by commas, spaces ignored">
+              <button type="button" id="bustHeaderAdd" class="btn btn-default">Add</button>
             </div>
           </div>
-        </div>
-        <div class="row">
-          <div class="col-md-6">
-            <div class="input-group">
-              <div class="input-group-btn">
-                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Mangling <span class="caret"></span></button>
-                <ul class="dropdown-menu" id="mfdropdown"></ul>
-              </div>
-              <input type="text" class="form-control" id="mangle_found" placeholder="separated by commas, spaces ignored">
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="input-group">
-              <label class="checkbox-inline">
-                <input type="checkbox" id="follow_dirs" checked> Recurse into subdirectories
-              </label>
-              <label class="checkbox-inline">
-                <input type="checkbox" id="follow_redirs" checked> Follow redirections
-              </label>
-              <label class="checkbox-inline">
-                <input type="checkbox" id="parse_body" checked> Parse response body
-              </label>
-            </div>
-          </div>
-        </div>
         <div class="form-group" style="text-align: center;">
           <button class="btn btn-lg btn-primary" type="submit">Start</button>
         </div>
