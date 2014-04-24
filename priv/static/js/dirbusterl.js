@@ -1,5 +1,5 @@
 function start_bust(e) {
-		e.preventDefault();
+	e.preventDefault();
 	data = new Object();
 	$.each(["url", "wordlist", "url_restriction"], function(n, e) {
 		var value = document.getElementById(e).value;
@@ -416,7 +416,7 @@ function add_bust_header() {
 }
 
 $(function() {
-		$("#bust").submit(start_bust);
+	$("#bust").submit(start_bust);
 	load_wordlists();
 	load_sessions();
 	fill_postfixes();
