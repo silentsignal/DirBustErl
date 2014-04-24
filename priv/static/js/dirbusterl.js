@@ -396,15 +396,15 @@ function remove_bust_header(event) {
 }
 
 function add_bust_header() {
-	var key = document.getElementById("bustHeaderKey").value;
-	var value = document.getElementById("bustHeaderValue").value;
+	var key = document.getElementById("bustHeaderKey");
+	var value = document.getElementById("bustHeaderValue");
 	var row = document.createElement("tr");
 	var key_col = document.createElement("td");
 	var value_col = document.createElement("td");
 	var btn_col = document.createElement("td");
 	var button = document.createElement("a");
-	key_col.appendChild(document.createTextNode(key));
-	value_col.appendChild(document.createTextNode(value));
+	key_col.appendChild(document.createTextNode(key.value));
+	value_col.appendChild(document.createTextNode(value.value));
 	button.className = "btn btn-danger btn-xs";
 	button.appendChild(document.createTextNode("Remove"));
 	$(button).on("click", null, row, remove_bust_header);
@@ -413,6 +413,8 @@ function add_bust_header() {
 	row.appendChild(value_col);
 	row.appendChild(btn_col);
 	$("#bustHeaders tbody").append(row);
+	key.value = "";
+	value.value = "";
 }
 
 $(function() {
