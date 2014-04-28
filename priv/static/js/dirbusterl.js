@@ -311,15 +311,16 @@ function url_changed(event) {
 		var res = new Array();
 		var host = url[2].split(":");
 		if (host.length == 2) {
-			res.push("^" + url[0] + "//" + host[0]);
+			res.push(url[0] + "//" + host[0]);
 		}
 		for (var i = 3; i <= url.length; i++) {
-			res.push("^" + url.slice(0, i).join("/"));
+			res.push(url.slice(0, i).join("/"));
 		}
 		$(res).each(function(n, re) {
 			var li = document.createElement("li");
 			var a = document.createElement("a");
 			a.href = '#';
+			re = "^" + re.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
 			a.appendChild(document.createTextNode(re));
 			$(a).on("click", null, re, url_restriction_selected);
 			li.appendChild(a);
