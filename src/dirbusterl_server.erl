@@ -9,7 +9,6 @@
 -define(FAIL_CASE_STRING, "thereIsNoWayThat-You-CanBeThere").
 
 -define(getStateConfigList(X), proplists:get_value(X, State#state.config, [])).
--define(incrementReqs(S, V), (S)#state{issued_reqs=(S)#state.issued_reqs + (V)}).
 -define(getHeaders(), proplists:get_value(headers, State#state.config, [])).
 
 bust(URL, Mode, State) ->
@@ -36,7 +35,8 @@ bust(URL, Mode, State) ->
 			dirbusterl:bust_dir(self(), lists:reverse(Dir));
 		false -> nop
 	end,
-	server_loop(?incrementReqs(State, NewReqs)).
+	dirbusterl_requests:increment(NewReqs),
+	server_loop(State).
 
 server_loop(State) ->
 	receive
@@ -98,9 +98,10 @@ burst_wordlist(BaseURL, State, Check) ->
 		eof -> {0, ok}
 	end,
 	case NewCheck of
-		ok -> State#state.issued_reqs + NewReqs;
+		ok -> NewReqs;
 		_ ->
-			burst_wordlist(BaseURL, ?incrementReqs(State, NewReqs), NewCheck)
+			dirbusterl_requests:increment(NewReqs),
+			burst_wordlist(BaseURL, State, NewCheck)
 	end.
 
 spawn_worker(URL, State, Params) ->

@@ -238,7 +238,8 @@ function load_sessions_data(sessions) {
 		switch (session.status) {
 			case "running":
 				tr.className = "active";
-				st.appendChild(document.createTextNode("running"));
+				st.appendChild(document.createTextNode(
+							"running (" + session.requests + " requests sent so far)"));
 				break;
 			case "finished":
 				tr.className = "success";

@@ -79,7 +79,8 @@ For those poor Erlang-unaware souls
 	1> mnesia:create_schema([node()]).
 	2> mnesia:start().
 	3> dirbusterl_storage:init_schema().
-	4> dirbusterl:bust("http://www.example.com", [{wordlist,"wordlist.txt"},{postfix,[".html"]},parse_body]).
+	4> dirbusterl_requests:start_link().
+	5> dirbusterl:bust("http://www.example.com", [{wordlist,"wordlist.txt"},{postfix,[".html"]},parse_body]).
 
 TODO
 ----
