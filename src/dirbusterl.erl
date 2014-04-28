@@ -3,6 +3,7 @@
 -export([bust/2, bust_async/3, bust_file/2, bust_dir/2]).
 -export([bust_core/3, bust_monitor/3]). %% for spawning
 -include_lib("dirbusterl_server_state.hrl").
+-include_lib("dirbusterl_requests_counter.erl").
 
 
 %% External API
@@ -42,8 +43,9 @@ bust_core(URL, UserConfig, Id) ->
 
 process_url_lists([], _, _, _) -> ok;
 process_url_lists([{url_list, URLList} | Inputs], Id, Waiter, Config) ->
-	dirbusterl_server:burst_wordlist(url_list,
-		#state{waiter=Waiter, wordlist=URLList, config=Config, id=Id}),
+	State = #state{waiter=Waiter, wordlist=URLList, config=Config, id=Id},
+	dirbusterl_requests:increment_req_wordlist(url_list, State),
+	dirbusterl_server:burst_wordlist(url_list, State),
 	process_url_lists(Inputs, Id, Waiter, Config);
 process_url_lists([_ | Inputs], Id, Waiter, Config) ->
 	process_url_lists(Inputs, Id, Waiter, Config).

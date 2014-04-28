@@ -1,6 +1,7 @@
 -module(dirbusterl_server).
--export([bust/3, burst_wordlist/2]).
+-export([bust/3, burst_wordlist/2, increment_req_wordlist/2]).
 -include_lib("dirbusterl_server_state.hrl").
+-include_lib("dirbusterl_requests_counter.erl").
 
 -define(BACKOFF_LIMIT, 16384).
 -define(BACKOFF_INTERVAL, 64).
@@ -19,11 +20,13 @@ bust(URL, Mode, State) ->
 		{Result, _} = FC when Result =/= error -> FC
 	end,
 	FCState = State#state{fail_case=FailCase},
-	dirbusterl_requests:increment(spawn_worker(URL, FCState, HttpCfg)),
+	RootWorker = spawn_worker(URL, FCState, HttpCfg),
+	[dirbusterl_requests:increment(K, RootWorker) || K <- [#requests.issued, #requests.all]],
 	case Mode of
 		dir ->
-			file:position(State#state.wordlist, bof),
 			BaseURL = url_tools:ensure_ends_with_slash(URL),
+			file:position(State#state.wordlist, bof),
+			increment_req_wordlist(BaseURL, State),
 			burst_wordlist(BaseURL,
 				FCState#state{config=dirbusterl_config:filter_burst_config(State#state.config)});
 		_ -> file
@@ -93,13 +96,33 @@ burst_wordlist(BaseURL, State, Check) ->
 					ExtendedBase = BaseURL ++ ibrowse_lib:url_encode(Postfix),
 					lists:sum([spawn_worker(ExtendedBase ++ PF, State, Params) || PF <- UserPF])
 			end,
-			dirbusterl_requests:increment(NR),
+			dirbusterl_requests:increment(#requests.issued, NR),
 			Check - 1;
 		eof -> ok
 	end,
 	case NewCheck of
 		ok -> ok;
 		_ -> burst_wordlist(BaseURL, State, NewCheck)
+	end.
+
+increment_req_wordlist(BaseURL, State) ->
+	Factor = case BaseURL of
+		url_list -> 1;
+		_ -> length(?getStateConfigList(postfix)) + 1
+	end,
+	dirbusterl_requests:increment(#requests.all,
+		measure_wordlist_file(State#state.wordlist, 0) * Factor).
+
+measure_wordlist_file(WordList, Reqs) ->
+	NewReqs = case file:read_line(WordList) of
+		{ok, <<$#, _/binary>>} -> Reqs;
+		{ok, <<$\n>>} -> Reqs;
+		{ok, _} -> Reqs + 1;
+		eof -> file:position(WordList, bof)
+	end,
+	case NewReqs of
+		{ok, _} -> Reqs;
+		_ -> measure_wordlist_file(WordList, NewReqs)
 	end.
 
 spawn_worker(URL, State, Params) ->

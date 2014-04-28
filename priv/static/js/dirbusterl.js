@@ -239,7 +239,7 @@ function load_sessions_data(sessions) {
 			case "running":
 				tr.className = "active";
 				st.appendChild(document.createTextNode(
-							"running (" + session.requests + " requests sent so far)"));
+							"running (" + session.requests.join(" / ") + " requests)"));
 				break;
 			case "finished":
 				tr.className = "success";

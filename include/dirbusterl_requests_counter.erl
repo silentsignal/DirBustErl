@@ -1,0 +1,1 @@
+-record(requests, {pid, issued=0, all=0}).
