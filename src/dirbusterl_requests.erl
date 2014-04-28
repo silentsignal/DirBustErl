@@ -12,6 +12,7 @@ start_link() -> gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 stop() -> gen_server:call(?MODULE, stop).
 
 get_value(Pid) -> gen_server:call(?MODULE, {get_value, Pid}).
+increment(0) -> ok;
 increment(Value) -> gen_server:cast(?MODULE, {increment, self(), Value}).
 init_bust() -> gen_server:cast(?MODULE, {init_bust, self()}).
 remove_bust() -> gen_server:cast(?MODULE, {remove_bust, self()}).
