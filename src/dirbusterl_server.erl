@@ -19,14 +19,14 @@ bust(URL, Mode, State) ->
 		{Result, _} = FC when Result =/= error -> FC
 	end,
 	FCState = State#state{fail_case=FailCase},
-	NewReqs = spawn_worker(URL, FCState, HttpCfg) +
+	dirbusterl_requests:increment(spawn_worker(URL, FCState, HttpCfg)),
 	case Mode of
 		dir ->
 			file:position(State#state.wordlist, bof),
 			BaseURL = url_tools:ensure_ends_with_slash(URL),
 			burst_wordlist(BaseURL,
 				FCState#state{config=dirbusterl_config:filter_burst_config(State#state.config)});
-		_ -> 0
+		_ -> file
 	end,
 	case url_tools:has_at_least_n_slashes(URL, 4) of
 		true ->
@@ -35,7 +35,6 @@ bust(URL, Mode, State) ->
 			dirbusterl:bust_dir(self(), lists:reverse(Dir));
 		false -> nop
 	end,
-	dirbusterl_requests:increment(NewReqs),
 	server_loop(State).
 
 server_loop(State) ->
@@ -81,9 +80,9 @@ burst_wordlist(BaseURL, State, 0) ->
 		_ -> burst_wordlist(BaseURL, State)
 	end;
 burst_wordlist(BaseURL, State, Check) ->
-	{NewReqs, NewCheck} = case file:read_line(State#state.wordlist) of
-		{ok, <<$#, _/binary>>} -> {0, Check};
-		{ok, <<$\n>>} -> {0, Check};
+	NewCheck = case file:read_line(State#state.wordlist) of
+		{ok, <<$#, _/binary>>} -> Check;
+		{ok, <<$\n>>} -> Check;
 		{ok, Line} ->
 			Postfix = binary_to_list(Line, 1, byte_size(Line) - 1),
 			Params = ?getStateConfigList(http_cfg),
@@ -94,14 +93,13 @@ burst_wordlist(BaseURL, State, Check) ->
 					ExtendedBase = BaseURL ++ ibrowse_lib:url_encode(Postfix),
 					lists:sum([spawn_worker(ExtendedBase ++ PF, State, Params) || PF <- UserPF])
 			end,
-			{NR, Check - 1};
-		eof -> {0, ok}
+			dirbusterl_requests:increment(NR),
+			Check - 1;
+		eof -> ok
 	end,
 	case NewCheck of
-		ok -> NewReqs;
-		_ ->
-			dirbusterl_requests:increment(NewReqs),
-			burst_wordlist(BaseURL, State, NewCheck)
+		ok -> ok;
+		_ -> burst_wordlist(BaseURL, State, NewCheck)
 	end.
 
 spawn_worker(URL, State, Params) ->
