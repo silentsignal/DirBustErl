@@ -1,5 +1,5 @@
 -module(dirbusterl_requests).
--export([increment/1, init_bust/0, start_link/0, stop/0, get_value/1]).
+-export([increment/1, init_bust/0, remove_bust/0, start_link/0, stop/0, get_value/1]).
 -export([dummy_process/2]).
 -export([init/1, handle_call/3, handle_cast/2, terminate/2]). %% gen_server callbacks
 -behavior(gen_server).
@@ -14,12 +14,12 @@ stop() -> gen_server:call(?MODULE, stop).
 get_value(Pid) -> gen_server:call(?MODULE, {get_value, Pid}).
 increment(Value) -> gen_server:cast(?MODULE, {increment, self(), Value}).
 init_bust() -> gen_server:cast(?MODULE, {init_bust, self()}).
+remove_bust() -> gen_server:cast(?MODULE, {remove_bust, self()}).
 
 %% Callbacks for gen_server
 
 init([]) -> {ok, ets:new(?MODULE, [])}.
 
-%% TODO delete completed busts
 handle_call(stop, _From, Tree) -> {stop, normal, ok, Tree};
 handle_call({get_value, Pid}, _From, Tab) ->
 	Result = case ets:lookup(Tab, Pid) of
@@ -28,6 +28,9 @@ handle_call({get_value, Pid}, _From, Tab) ->
 	end,
 	{reply, Result, Tab}.
 
+handle_cast({remove_bust, Pid}, Tab) ->
+	ets:delete(Tab, Pid),
+	{noreply, Tab};
 handle_cast({init_bust, Pid}, Tab) ->
 	ets:insert(Tab, {Pid, 0}),
 	{noreply, Tab};

@@ -36,6 +36,7 @@ bust_core(URL, UserConfig, Id) ->
 	dirbusterl_server:bust(URL, dir,
 		#state{waiter=Waiter, wordlist=WordList, config=Config, urls=URLs, id=Id, parents=Parents}),
 	dirbusterl_config:process_inputs_close(Inputs),
+	dirbusterl_requests:remove_bust(),
 	dirbusterl_visited_urls:stop(Parents),
 	dirbusterl_visited_urls:stop(URLs).
 
