@@ -1,5 +1,5 @@
 -module(dirbusterl_storage).
--export([init_schema/0, generate_bust_id/0, register_bust/3, delete_bust/1, store_finding/3, get_findings/1, set_server_pid/2, get_server_pid/1, get_busts/0]).
+-export([init_schema/0, generate_bust_id/0, register_bust/3, delete_bust/1, store_finding/3, get_findings/1, set_server_pid/2, get_server_pid/1, get_busts/0, get_bust_status/1]).
 
 -record(dirbusterl_bust, {id, url, config, server_pid=not_started}).
 -record(dirbusterl_finding, {bust_id_url, metadata}).
@@ -75,6 +75,12 @@ get_busts() ->
 			|| R <- mnesia:table(dirbusterl_bust)]))
 	end),
 	Busts.
+
+get_bust_status(BustId) ->
+	case get_server_pid(BustId) of
+		not_registered -> not_found;
+		SP -> format_bust_status(SP)
+	end.
 
 format_bust_status(ServerPid) ->
 	[{status, bust_status(ServerPid)}, {ended, decode_ended(ServerPid)},

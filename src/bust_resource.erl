@@ -25,14 +25,16 @@ delete_resource(ReqData, State) ->
     {dirbusterl_storage:delete_bust(get_bust_id(ReqData)), ReqData, State}.
 
 to_json(ReqData, State) ->
-    Payload = get_json_data(get_bust_id(ReqData), State),
-    {mochijson2:encode(Payload), ReqData, State}.
+    case get_json_data(get_bust_id(ReqData), State) of
+        not_found -> {halt, 404};
+        Payload -> {mochijson2:encode(Payload), ReqData, State}
+    end.
 
 get_bust_id(ReqData) ->
     usb64:decode(proplists:get_value(bust_id, wrq:path_info(ReqData), "")).
 
 get_json_data(_, list) -> dirbusterl_storage:get_busts();
-%% TODO get_json_data(ReqData, status) ->
+get_json_data(BustId, status) -> dirbusterl_storage:get_bust_status(BustId);
 get_json_data(BustId, findings) -> dirbusterl_storage:get_findings(BustId).
 
 from_json(ReqData, State) ->
