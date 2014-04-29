@@ -207,7 +207,7 @@ function update_session_params(config) {
 
 function session_abort_clicked(event) {
 	$.ajax({
-		url: "/bust/" + event.data.id,
+		url: "/busts/" + event.data.id,
 		type: "PUT",
 		data: '{"status": "aborted"}',
 		contentType: "application/json",

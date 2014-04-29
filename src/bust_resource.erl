@@ -37,15 +37,20 @@ get_json_data(_, list) -> dirbusterl_storage:get_busts();
 get_json_data(BustId, status) -> dirbusterl_storage:get_bust_status(BustId);
 get_json_data(BustId, findings) -> dirbusterl_storage:get_findings(BustId).
 
-from_json(ReqData, State) ->
+from_json(ReqData, State = status) ->
+    {struct, Values} = mochijson2:decode(wrq:req_body(ReqData)),
+    case {Values, dirbusterl_storage:get_server_pid(get_bust_id(ReqData))} of
+        {[{<<"status">>, <<"aborted">>}], Pid} when is_pid(Pid) ->
+            exit(Pid, user_abortion),
+            {true, ReqData, State};
+        _ ->
+            {halt, 501} %% Not Implemented
+    end;
+from_json(ReqData, State = list) ->
     Id = usb64:decode(wrq:disp_path(ReqData)),
     {struct, Values} = mochijson2:decode(wrq:req_body(ReqData)),
-    case {Values, dirbusterl_storage:get_server_pid(Id)} of
-        {[{<<"status">>, <<"aborted">>}], Pid} when is_pid(Pid) -> exit(Pid, user_abortion);
-        {_, not_registered} ->
-            {URL, Config} = process_json_values(Values),
-            dirbusterl:bust_async(Id, URL, Config)
-    end,
+    {URL, Config} = process_json_values(Values),
+    dirbusterl:bust_async(Id, URL, Config),
     {true, ReqData, State}.
 
 -define(AK(X), Key =:= <<X>>).
