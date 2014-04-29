@@ -236,28 +236,7 @@ function load_sessions_data(sessions) {
 		tr.appendChild(id);
 		tr.appendChild(started);
 		tr.appendChild(url);
-		switch (session.status) {
-			case "running":
-				tr.className = "active";
-				var stats = document.createElement("div");
-				stats.appendChild(document.createTextNode(
-							"running (" + session.requests.join(" / ") + " requests)"));
-				st.appendChild(create_progressbar(session.requests));
-				st.appendChild(stats);
-				break;
-			case "finished":
-				tr.className = "success";
-				st.appendChild(document.createTextNode("finished at " + session.ended));
-				break;
-			case "not_started":
-				tr.className = "warning";
-				st.appendChild(document.createTextNode("waiting to start"));
-				break;
-			default:
-				tr.className = "danger";
-				st.appendChild(document.createTextNode("aborted at " + session.ended));
-				break;
-		}
+		set_tr_status(tr, st, session);
 		tr.appendChild(st);
 		button.className = "btn btn-info btn-xs";
 		button.appendChild(document.createTextNode("Details"));
@@ -274,6 +253,31 @@ function load_sessions_data(sessions) {
 		tr.appendChild(details);
 		tbody.append(tr);
 	});
+}
+
+function set_tr_status(tr, st, session) {
+	switch (session.status) {
+		case "running":
+			tr.className = "active";
+			var stats = document.createElement("div");
+			stats.appendChild(document.createTextNode(
+						"running (" + session.requests.join(" / ") + " requests)"));
+			st.appendChild(create_progressbar(session.requests));
+			st.appendChild(stats);
+			break;
+		case "finished":
+			tr.className = "success";
+			st.appendChild(document.createTextNode("finished at " + session.ended));
+			break;
+		case "not_started":
+			tr.className = "warning";
+			st.appendChild(document.createTextNode("waiting to start"));
+			break;
+		default:
+			tr.className = "danger";
+			st.appendChild(document.createTextNode("aborted at " + session.ended));
+			break;
+	}
 }
 
 function create_progressbar(reqs) {
