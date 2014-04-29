@@ -69,13 +69,16 @@ get_busts() ->
 		qlc:e(qlc:q([[
 			{id, usb64:encode(R#dirbusterl_bust.id)},
 			{started, bust_id_to_datetime(R#dirbusterl_bust.id)},
-			{status, bust_status(R#dirbusterl_bust.server_pid)},
-			{requests, dirbusterl_requests:get_value(R#dirbusterl_bust.server_pid)},
-			{ended, decode_ended(R#dirbusterl_bust.server_pid)},
-			{url, R#dirbusterl_bust.url} | config_value_to_json(R#dirbusterl_bust.config)]
+			{url, R#dirbusterl_bust.url}
+			| (format_bust_status(R#dirbusterl_bust.server_pid) ++
+				config_value_to_json(R#dirbusterl_bust.config))]
 			|| R <- mnesia:table(dirbusterl_bust)]))
 	end),
 	Busts.
+
+format_bust_status(ServerPid) ->
+	[{status, bust_status(ServerPid)}, {ended, decode_ended(ServerPid)},
+		{requests, dirbusterl_requests:get_value(ServerPid)}].
 
 decode_ended(ServerPid) when is_tuple(ServerPid),
 		element(1, ServerPid) =:= finished ->
