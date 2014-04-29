@@ -238,8 +238,11 @@ function load_sessions_data(sessions) {
 		switch (session.status) {
 			case "running":
 				tr.className = "active";
-				st.appendChild(document.createTextNode(
+				var stats = document.createElement("div");
+				stats.appendChild(document.createTextNode(
 							"running (" + session.requests.join(" / ") + " requests)"));
+				st.appendChild(create_progressbar(session.requests));
+				st.appendChild(stats);
 				break;
 			case "finished":
 				tr.className = "success";
@@ -270,6 +273,21 @@ function load_sessions_data(sessions) {
 		tr.appendChild(details);
 		tbody.append(tr);
 	});
+}
+
+function create_progressbar(reqs) {
+	var total = reqs[2];
+	var bars = ["success", "warning"];
+	var progress = document.createElement("div");
+	progress.style.marginBottom = "4px";
+	progress.className = "progress progress-striped active";
+	$(bars).each(function (pos, color) {
+		var bar = document.createElement("div");
+		bar.className = "progress-bar progress-bar-" + color;
+		bar.style.width = Math.round(reqs[pos] * 100 / total) + "%";
+		progress.appendChild(bar);
+	});
+	return progress;
 }
 
 function load_wordlists() {
