@@ -7,7 +7,7 @@ import requests
 
 DIRB_ROOT = 'http://localhost:8000/'
 TEST_ROOT = 'http://localhost:5000/'
-BUST_RESOURCE_URL = DIRB_ROOT + 'bust'
+BUST_RESOURCE_URL = DIRB_ROOT + 'busts'
 
 class TestDirBustErl(TestCase):
     def setUp(self):
@@ -35,7 +35,7 @@ class TestDirBustErl(TestCase):
                 break
         else:
             self.fail("Bust didn't finish within 5 seconds")
-        results = self.session.get(bust_url).json()
+        results = self.session.get(bust_url + '/findings.json').json()
         self.session.delete(bust_url)
         return results
 

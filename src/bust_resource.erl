@@ -4,7 +4,7 @@
 -include_lib("webmachine/include/webmachine.hrl").
 
 
-init([]) -> {ok, undefined}.
+init([Format]) -> {ok, Format}.
 
 content_types_provided(ReqData, State) ->
     {[{"application/json", to_json}], ReqData, State}.
@@ -22,15 +22,18 @@ create_path(R, S) ->
     {usb64:encode_to_string(dirbusterl_storage:generate_bust_id()), R, S}.
 
 delete_resource(ReqData, State) ->
-    BustId = usb64:decode(wrq:disp_path(ReqData)),
-    {dirbusterl_storage:delete_bust(BustId), ReqData, State}.
+    {dirbusterl_storage:delete_bust(get_bust_id(ReqData)), ReqData, State}.
 
 to_json(ReqData, State) ->
-    Payload = case wrq:disp_path(ReqData) of
-        "" -> dirbusterl_storage:get_busts();
-        BustId -> dirbusterl_storage:get_findings(usb64:decode(BustId))
-    end,
+    Payload = get_json_data(get_bust_id(ReqData), State),
     {mochijson2:encode(Payload), ReqData, State}.
+
+get_bust_id(ReqData) ->
+    usb64:decode(proplists:get_value(bust_id, wrq:path_info(ReqData), "")).
+
+get_json_data(_, list) -> dirbusterl_storage:get_busts();
+%% TODO get_json_data(ReqData, status) ->
+get_json_data(BustId, findings) -> dirbusterl_storage:get_findings(BustId).
 
 from_json(ReqData, State) ->
     Id = usb64:decode(wrq:disp_path(ReqData)),

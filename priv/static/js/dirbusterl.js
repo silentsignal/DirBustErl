@@ -21,7 +21,7 @@ function start_bust(e) {
 		});
 	}
 	$.ajax({
-		url: "/bust",
+		url: "/busts",
 		type: "POST",
 		data: JSON.stringify(data),
 		contentType: "application/json",
@@ -34,7 +34,7 @@ function start_bust(e) {
 }
 
 function load_sessions() {
-	$.getJSON("/bust", null, load_sessions_data);
+	$.getJSON("/busts", null, load_sessions_data);
 }
 
 function session_detail_clicked(event) {
@@ -44,7 +44,8 @@ function session_detail_clicked(event) {
 }
 
 function update_session_findings(id) {
-	$.getJSON("/bust/" + id, null, load_session_findings).fail(session_fail);
+	$.getJSON("/busts/" + id + "/findings.json", null,
+			load_session_findings).fail(session_fail);
 }
 
 function session_fail(jqxhr, textStatus, error) {
