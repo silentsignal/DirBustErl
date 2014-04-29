@@ -5,6 +5,8 @@
 -behavior(gen_server).
 -record(state, {server, config, bust_id, event_mgr, nprocs=1}).
 
+-include_lib("dirbusterl_requests_counter.erl").
+
 -define(ENABLED(X), proplists:get_bool(X, Config)).
 -define(CONFIG_MOD_MAP, [
 	{dirbusterl_dir_follower, follow_dirs},
@@ -37,10 +39,15 @@ get_nprocs(Waiter) -> gen_server:call(Waiter, get_nprocs).
 
 init(Args) -> {ok, Args}.
 
-handle_cast(finished, S = #state{nprocs=1}) -> {stop, normal, S};
-handle_cast(finished, S) -> {noreply, S#state{nprocs=S#state.nprocs - 1}};
+handle_cast(finished, S = #state{nprocs=1}) ->
+	increase_finished(S),
+	{stop, normal, S};
+handle_cast(finished, S) ->
+	increase_finished(S),
+	{noreply, S#state{nprocs=S#state.nprocs - 1}};
 handle_cast(started, S) -> {noreply, S#state{nprocs=S#state.nprocs + 1}};
 handle_cast({finished, _, _, _} = Event, State) ->
+	increase_finished(State),
 	spawn_link(?MODULE, dispatch_event, [Event, State#state.event_mgr, self()]),
 	{noreply, State}. %% LOCK
 
@@ -50,6 +57,9 @@ terminate(normal, S) -> S#state.server ! done.
 
 
 %% Internal functions
+
+increase_finished(#state{server = Server}) ->
+	dirbusterl_requests:increment(Server, #requests.finished, 1).
 
 dispatch_event(Event, Manager, Waiter) ->
 	ok = gen_event:sync_notify(Manager, Event),

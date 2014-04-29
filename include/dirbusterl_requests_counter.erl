@@ -1,1 +1,1 @@
--record(requests, {pid, issued=0, all=0}).
+-record(requests, {pid, finished=0, issued=0, all=0}).
