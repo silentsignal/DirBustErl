@@ -38,6 +38,7 @@ function load_sessions() {
 }
 
 function session_detail_clicked(event) {
+	// TODO check for status updates
 	update_session_params(event.data);
 	update_session_findings(event.data.id);
 	$('#detailsModal').modal({});
@@ -211,9 +212,11 @@ function session_abort_clicked(event) {
 		type: "PUT",
 		data: '{"status": "aborted"}',
 		contentType: "application/json",
-		complete: load_sessions // TODO (re)load after bust_monitor updated the DB
+		complete: function() { update_status(event.data.id); }
 	});
 }
+
+var id_tr_map = {};
 
 function load_sessions_data(sessions) {
 	var tbody = $("#sessions tbody").empty();
@@ -229,6 +232,7 @@ function load_sessions_data(sessions) {
 		var button = document.createElement("a");
 		id.className = "bust_id";
 		id.appendChild(document.createTextNode(session.id));
+		id_tr_map[session.id] = tr;
 		started.appendChild(document.createTextNode(session.started));
 		a.appendChild(document.createTextNode(session.url));
 		a.href = session.url;
@@ -244,7 +248,7 @@ function load_sessions_data(sessions) {
 		$(button).on("click", null, session, session_detail_clicked);
 		if (session.status == "running") {
 			button = document.createElement("a");
-			button.className = "btn btn-danger btn-xs";
+			button.className = "btn btn-danger btn-xs session-abort";
 			button.appendChild(document.createTextNode("Abort"));
 			details.appendChild(document.createTextNode(" "));
 			details.appendChild(button);
@@ -256,6 +260,7 @@ function load_sessions_data(sessions) {
 }
 
 function set_tr_status(tr, st, session) {
+	var may_change = false;
 	switch (session.status) {
 		case "running":
 			tr.className = "active";
@@ -264,6 +269,7 @@ function set_tr_status(tr, st, session) {
 						"running (" + session.requests.join(" / ") + " requests)"));
 			st.appendChild(create_progressbar(session.requests));
 			st.appendChild(stats);
+			may_change = true;
 			break;
 		case "finished":
 			tr.className = "success";
@@ -272,12 +278,28 @@ function set_tr_status(tr, st, session) {
 		case "not_started":
 			tr.className = "warning";
 			st.appendChild(document.createTextNode("waiting to start"));
+			may_change = true;
 			break;
 		default:
 			tr.className = "danger";
 			st.appendChild(document.createTextNode("aborted at " + session.ended));
+			may_change = (session.ended == null);
 			break;
 	}
+	if (may_change) setTimeout("update_status('" + session.id + "')", 330);
+}
+
+function update_status(id) {
+	$.getJSON("/busts/" + id, null, function(stat) {
+		var tr = id_tr_map[id];
+		var td = tr.children[3];
+		$(td).empty();
+		if (stat.status != "running") {
+			$(".session-abort", tr.children[4]).remove();
+		}
+		stat.id = id;
+		set_tr_status(tr, td, stat);
+	});
 }
 
 function create_progressbar(reqs) {
