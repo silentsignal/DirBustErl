@@ -6,8 +6,8 @@
 init(State) ->
 	{ok, State}.
 
-handle_event({finished, URL, Code, Contents}, {Rules, Server} = State)
-		when Code =/= error, is_list(Contents) ->
+handle_event({finished, URL, Code, _}, {Rules, Server} = State)
+		when Code =/= error ->
 	mangle_found(Rules, URL, Server),
 	{ok, State};
 handle_event(_, State) ->

@@ -55,7 +55,9 @@ class TestDirBustErl(TestCase):
                 mangle_found=[r'.\1.swp', r'\1~'], url_restriction='^' + url)
         findings = self.get_bust_results(bust)
         expected = [{'url': url + p, 'code': requests.codes.ok}
-                for p in ('', 'foo', '.foo.swp')]
+                for p in ('', 'foo', '.foo.swp', '.qux.swp')]
+        expected.append({'url': url + 'qux', 'code': requests.codes.found,
+            'redir': url + 'qux2'})
         self.assertEquals(sorted(findings), sorted(expected))
 
     def test_headers(self):

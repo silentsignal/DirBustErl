@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from flask import Flask, request, abort
+from flask import Flask, request, abort, redirect
 
 app = Flask(__name__)
 
@@ -17,8 +17,13 @@ def broken404(param):
 @app.route('/mangling/foo')
 @app.route('/mangling/.foo.swp')
 @app.route('/mangling/.bar.swp')
+@app.route('/mangling/.qux.swp')
 def mangling():
     return 'Mangling is useful'
+
+@app.route('/mangling/qux')
+def mangling_redirect():
+    return redirect('/mangling/qux2')
 
 @app.route('/header-req')
 def header_req():
