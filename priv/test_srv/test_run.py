@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import unicode_literals
 from time import sleep
 from unittest import TestCase, main
 import json
