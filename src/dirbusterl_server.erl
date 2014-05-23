@@ -14,7 +14,8 @@
 
 bust(URL, Mode, State) ->
 	HttpCfg = ?getStateConfigList(http_cfg),
-	FailCase = case worker:try_url_sync(url_tools:urljoin(URL, ?FAIL_CASE_STRING),
+	BaseURL = url_tools:ensure_ends_with_slash(URL),
+	FailCase = case worker:try_url_sync(url_tools:urljoin(BaseURL, ?FAIL_CASE_STRING),
 		    ?getHeaders(), HttpCfg) of
 		not_found = NF -> NF;
 		{Result, _} = FC when Result =/= error -> FC
@@ -24,7 +25,6 @@ bust(URL, Mode, State) ->
 	[dirbusterl_requests:increment(K, RootWorker) || K <- [#requests.issued, #requests.all]],
 	case Mode of
 		dir ->
-			BaseURL = url_tools:ensure_ends_with_slash(URL),
 			file:position(State#state.wordlist, bof),
 			increment_req_wordlist(BaseURL, State),
 			burst_wordlist(BaseURL,
