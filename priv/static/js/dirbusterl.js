@@ -306,12 +306,14 @@ function create_progressbar(reqs) {
 	var total = reqs[2];
 	var bars = ["success", "warning"];
 	var progress = document.createElement("div");
+	var width = 0;
 	progress.style.marginBottom = "4px";
 	progress.className = "progress progress-striped active";
 	$(bars).each(function (pos, color) {
 		var bar = document.createElement("div");
 		bar.className = "progress-bar progress-bar-" + color;
-		bar.style.width = Math.round(reqs[pos] * 100 / total) + "%";
+		width = reqs[pos] * 100 / total - width;
+		bar.style.width = Math.round(width) + "%";
 		progress.appendChild(bar);
 	});
 	return progress;
