@@ -16,7 +16,7 @@ def report(ids):
     dirs = set()
     redirs = dict()
     for bust_id in ids:
-        for result in REQ_SES.get(b'http://localhost:8000/bust/' + bust_id).json():
+        for result in REQ_SES.get(b'http://localhost:8000/busts/' + bust_id + '/findings.json').json():
             redir = result.get('redir')
             if result.get('dir'):
                 dirs.add(result['url'])
