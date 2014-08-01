@@ -27,7 +27,7 @@ def report(ids):
     print 'DirBustErl report :: https://github.com/silentsignal/DirBustErl'
     for code, file_list in sorted(files.iteritems()):
         print_header('Files found with response code {0}'.format(code))
-        for file_name in file_list:
+        for file_name in sorted(file_list):
             print file_name
     if dirs:
         print_header('Directories found')
