@@ -74,6 +74,9 @@ process_json_values([{<<"wordlist">>, WordList} | Values], URL, CfgAcc) ->
     true = ordsets:is_element(WordList, wordlist_resource:wordlists()), %% XXX
     WLfile = binary_to_list(filename:join(wordlist_resource:wordlist_dir(), WordList)),
     process_json_values(Values, URL, [{wordlist, WLfile} | CfgAcc]);
+process_json_values([{<<"basic_auth">>, [Username, Password]} | Values], URL, CfgAcc) ->
+	Creds = {binary_to_list(Username), binary_to_list(Password)},
+	process_json_values(Values, URL, [{basic_auth, Creds} | CfgAcc]);
 process_json_values([{<<"headers">>, Headers} | Values], URL, CfgAcc) ->
 	Tuples = lists:map(fun erlang:list_to_tuple/1, process_json_value(Headers)),
 	process_json_values(Values, URL, [{headers, Tuples} | CfgAcc]);

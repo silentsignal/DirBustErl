@@ -32,6 +32,14 @@ def header_req():
     else:
         abort(404)
 
+@app.route('/auth')
+def auth():
+    a = request.authorization
+    if a and a.username == "foo" and a.password == "bar":
+        return 'Welcome'
+    else:
+        abort(401)
+
 @app.route('/postfix/bar.html')
 def postfix():
     return '<html><body>Welcome to the bar!</body></html>'

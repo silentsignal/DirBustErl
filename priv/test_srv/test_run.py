@@ -60,6 +60,15 @@ class TestDirBustErl(TestCase):
             'redir': url + 'qux2'})
         self.assertEquals(sorted(findings), sorted(expected))
 
+    def test_auth(self):
+        url = TEST_ROOT + 'auth'
+        for http_cfg, code in [({}, requests.codes.unauthorized),
+                ({'basic_auth': ['foo', 'bar']}, requests.codes.ok)]:
+            bust = self.start_bust(url=url, wordlist='TEST.txt',
+                    url_restriction='^' + url, http_cfg=http_cfg)
+            findings = self.get_bust_results(bust)
+            self.assertEquals(findings, [{'url': url, 'code': code}])
+
     def test_headers(self):
         url = TEST_ROOT + 'header-req'
         for headers, expected in [([], []), ([['X-Files', 'TrustNo1']],
