@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 from collections import defaultdict
 from urlparse import urlparse, urlunparse
+from datetime import datetime
 import requests
 
 REQ_SES = requests.session()
@@ -28,6 +29,7 @@ def report(ids):
                 c14n_url = (scheme, netloc, path.replace('//', '/'), params, query, fragment)
                 files[result['code']].add(urlunparse(c14n_url))
     print 'DirBustErl report :: https://github.com/silentsignal/DirBustErl'
+    print 'generated at {0}'.format(datetime.now())
     for code, file_list in sorted(files.iteritems()):
         print_header('Files found with response code {0}'.format(code))
         for file_name in sorted(file_list):
