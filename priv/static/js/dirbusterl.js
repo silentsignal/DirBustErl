@@ -308,7 +308,7 @@ function create_progressbar(reqs) {
 	var progress = document.createElement("div");
 	var width = 0;
 	progress.style.marginBottom = "4px";
-	progress.className = "progress progress-striped active";
+	progress.className = "progress progress-striped";
 	$(bars).each(function (pos, color) {
 		var bar = document.createElement("div");
 		bar.className = "progress-bar progress-bar-" + color;
