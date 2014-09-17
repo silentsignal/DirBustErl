@@ -269,8 +269,8 @@ function set_tr_status(tr, st, session) {
 			var stats = document.createElement("div");
 			stats.appendChild(document.createTextNode(
 						"running (" + session.requests.join(" / ") + " requests)" +
-						(last_reqs == null ? "" : " " +
-						 (session.requests[0] - last_reqs[0]) * 3 + " req/s")));
+						(last_reqs == null ? "" :
+						 " " + format_perfdata(session.requests))));
 			last_reqs = session.requests;
 			st.appendChild(create_progressbar(session.requests));
 			st.appendChild(stats);
@@ -292,6 +292,11 @@ function set_tr_status(tr, st, session) {
 			break;
 	}
 	if (may_change) setTimeout("update_status('" + session.id + "')", 330);
+}
+
+function format_perfdata(reqs) {
+	rps = (reqs[0] - last_reqs[0]) * 3;
+	return (rps + " req/s, " + Math.round((reqs[2] - reqs[0]) / rps) + " s remaining");
 }
 
 function update_status(id) {
