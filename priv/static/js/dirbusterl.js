@@ -259,6 +259,8 @@ function load_sessions_data(sessions) {
 	});
 }
 
+var last_reqs = null;
+
 function set_tr_status(tr, st, session) {
 	var may_change = false;
 	switch (session.status) {
@@ -266,7 +268,10 @@ function set_tr_status(tr, st, session) {
 			tr.className = "active";
 			var stats = document.createElement("div");
 			stats.appendChild(document.createTextNode(
-						"running (" + session.requests.join(" / ") + " requests)"));
+						"running (" + session.requests.join(" / ") + " requests)" +
+						(last_reqs == null ? "" : " " +
+						 (session.requests[0] - last_reqs[0]) * 3 + " req/s")));
+			last_reqs = session.requests;
 			st.appendChild(create_progressbar(session.requests));
 			st.appendChild(stats);
 			may_change = true;
