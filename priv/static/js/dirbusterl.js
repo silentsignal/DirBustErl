@@ -296,6 +296,7 @@ function set_tr_status(tr, st, session) {
 
 function format_perfdata(reqs) {
 	rps = (reqs[0] - last_reqs[0]) * 3;
+	if (rps == 0) return "stalled";
 	return (rps + " req/s, " + Math.round((reqs[2] - reqs[0]) / rps) + " s remaining");
 }
 
