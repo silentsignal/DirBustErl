@@ -96,6 +96,8 @@ URLs and words read from files are parsed according to the following rules.
 Example run
 -----------
 
+_Note:_ if the web interface works for you, you don't need this anymore.
+
 For those poor Erlang-unaware souls
 
 	$ erl -pa ebin -pa deps/ibrowse/ebin/ -s ibrowse
