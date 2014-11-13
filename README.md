@@ -50,12 +50,21 @@ change that by setting the `WEBMACHINE_PORT` environment variable.
 Erlang interface
 ----------------
 
-There's currently one entry point:
+There are currently two entry points:
 
-	dirbusterl:bust(URL, Config)
+	dirbusterl:bust(URL, UserConfig)
+	dirbusterl:bust_async(Id, URL, UserConfig)
 
+ - `Id` is a binary that can be used to access the result
  - `URL` is a string that is requested first (entry point)
- - `Config` can be a list of the following configuration parameters (if omitted, an empty one is assumed)
+ - `UserConfig` can be a list of the following configuration parameters (required since a wordlist or a list of URLs is mandatory)
+
+While `bust` is synchronous and blocks execution until finished, `bust_async`
+returns immediately and the `Id` parameter can be used to check progress. Such
+value can be generated using `dirbusterl_storage:generate_bust_id/0` but any
+unique binary value will do. Findings can be queried by calling
+`dirbusterl_storage:get_findings/1` with the `Id` as the sole parameter. The
+structure of the return value is the same as with the `dirbusterl:bust/2` function.
 
 ### Configuration parameters
 
