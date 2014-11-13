@@ -115,6 +115,7 @@ TODO
  - detection of case-insensitive behavior (Windows servers)
  - detection of duplicate files (Apache MultiViews, symbolic links, etc.)
  - multi-node support
+ - document the REST API
 
   [1]: https://www.owasp.org/index.php/Category:OWASP_DirBuster_Project
   [2]: https://code.google.com/p/fuzzdb/source/browse/trunk/discovery/FilenameBruteforce/Extensions.Backup.fuzz.txt
