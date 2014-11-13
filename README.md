@@ -33,6 +33,20 @@ Running unit tests
 
 	$ make test
 
+Web interface
+-------------
+
+	$ ./start.sh
+	...
+	=PROGRESS REPORT==== 13-Nov-2014::14:08:27 ===
+         application: dirbusterl
+          started_at: nonode@nohost
+
+The web interface is available at http://localhost:8000/ by default, you can
+change that by setting the `WEBMACHINE_PORT` environment variable.
+
+![Screenshot of the web interface](doc/screenshot-web.png?raw=true)
+
 Erlang interface
 ----------------
 
@@ -87,7 +101,6 @@ TODO
 
  - nmap favicon DB hash detection
  - Etag and Last-Modified parsing
- - web interface
  - detection of case-insensitive behavior (Windows servers)
  - detection of duplicate files (Apache MultiViews, symbolic links, etc.)
  - multi-node support
