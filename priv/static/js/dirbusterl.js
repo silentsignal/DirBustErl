@@ -8,6 +8,18 @@ function start_bust(e) {
 	$.each(["follow_dirs", "follow_redirs", "parse_body"], function(n, e) {
 		if (document.getElementById(e).checked) data[e] = true;
 	});
+	var socks5_host = document.getElementById("socks5_host").value;
+	var socks5_port = document.getElementById("socks5_port").value;
+	if (socks5_host && socks5_port) {
+		data.http_cfg = {"socks5_host": socks5_host,
+			"socks5_port": parseInt(socks5_port)};
+		var socks5_user = document.getElementById("socks5_user").value;
+		var socks5_pass = document.getElementById("socks5_pass").value;
+		if (socks5_user && socks5_pass) {
+			data.http_cfg.socks5_user = socks5_user;
+			data.http_cfg.socks5_pass = socks5_pass;
+		}
+	}
 	$.each(["mangle_found", "postfix"], function(n, e) {
 		var value = document.getElementById(e).value;
 		if (value) data[e] = value.split(/ *, */);
@@ -136,6 +148,18 @@ function update_session_params(config) {
 		follow_dirs: {
 			label: "Recursively bust directories",
 			type: "flag"
+		},
+		"socks5_host": {
+			label: "SOCKS5 host",
+			type: "string"
+		},
+		"socks5_port": {
+			label: "SOCKS5 port",
+			type: "string"
+		},
+		"socks5_user": {
+			label: "SOCKS5 user",
+			type: "string"
 		}
 	};
 	var tbody = $("#detailsModal .detailsParams tbody").empty();
@@ -145,6 +169,7 @@ function update_session_params(config) {
 		var value = document.createElement("td");
 		key.appendChild(document.createTextNode(setting.label));
 		config_value = config[name];
+		if (!config_value && config.http_cfg) config_value = config.http_cfg[name];
 		switch (setting.type) {
 			case "flag":
 				var icon = document.createElement("span");

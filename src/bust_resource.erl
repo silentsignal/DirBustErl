@@ -62,6 +62,10 @@ from_json(ReqData, State = list) ->
         ?AK("postfix") ;
         ?AK("mangle_found") ;
         ?AK("http_cfg") ;
+        ?AK("socks5_host") ;
+        ?AK("socks5_port") ;
+        ?AK("socks5_user") ;
+        ?AK("socks5_pass") ;
         ?AK("proxy_host") ;
         ?AK("proxy_port") ; %% TODO add more ibrowse atoms
         ?AK("url_list")).
