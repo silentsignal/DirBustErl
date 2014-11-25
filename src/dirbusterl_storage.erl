@@ -133,5 +133,6 @@ config_value_to_json([Elem | _] = Value) when is_integer(Elem) ->
 	list_to_binary(Value);
 config_value_to_json([Elem | _] = Value) when is_list(Elem) ->
 	lists:map(fun config_value_to_json/1, Value);
+config_value_to_json(Value) when is_integer(Value) -> Value;
 config_value_to_json([Elem | _] = Value) when is_tuple(Elem); is_atom(Elem) ->
 	lists:map(fun config_to_json/1, Value).

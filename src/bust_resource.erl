@@ -94,5 +94,6 @@ process_json_value({struct, Values}) ->
     Processed;
 process_json_value(Value) when is_binary(Value) ->
     binary_to_list(Value);
+process_json_value(Value) when is_integer(Value) -> Value;
 process_json_value(Value) when is_list(Value) ->
     lists:map(fun process_json_value/1, Value).
