@@ -18,11 +18,19 @@ urljoin_test() ->
 	   "http://foo/bar/qux/baz").
 
 urljoin_rfc1808_test() ->
-	FileName = filename:join(code:priv_dir(dirbusterl), "rfc1808.txt"),
+	FileName = filename:join(priv_dir(dirbusterl), "rfc1808.txt"),
 	{ok, FP} = file:open(FileName, [read, raw, read_ahead, binary]),
 	read_rfc1808_lines_until_51(FP),
 	test_rfc1808_lines(FP),
 	file:close(FP).
+
+priv_dir(App) ->
+	case code:priv_dir(App) of
+		{error, bad_name} ->
+			{ok, Cwd} = file:get_cwd(),
+			filename:join(Cwd, "priv");
+		Priv -> Priv
+	end.
 
 read_rfc1808_lines_until_51(FP) ->
 	{ok, Line} = file:read_line(FP),
