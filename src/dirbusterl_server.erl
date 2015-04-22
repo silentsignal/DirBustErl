@@ -15,12 +15,13 @@
 bust(URL, Mode, State) ->
 	HttpCfg = ?getStateConfigList(http_cfg),
 	BaseURL = url_tools:ensure_ends_with_slash(URL),
-	FailCase = case worker:try_url_sync(url_tools:urljoin(BaseURL, ?FAIL_CASE_STRING),
+	FailCase = [case worker:try_url_sync(
+					   url_tools:urljoin(BaseURL, ?FAIL_CASE_STRING) ++ Postfix,
 		    ?getHeaders(), HttpCfg) of
 		not_found = NF -> NF;
 		{Result, _} = FC when Result =/= error -> FC
-	end,
-	FCState = State#state{fail_case=FailCase},
+	end || Postfix <- ["" | ?getStateConfigList(postfix)]],
+	FCState = State#state{fail_case=[not_found | FailCase]},
 	RootWorker = spawn_worker(URL, FCState, HttpCfg),
 	[dirbusterl_requests:increment(K, RootWorker) || K <- [#requests.issued, #requests.all]],
 	case Mode of

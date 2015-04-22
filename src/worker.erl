@@ -6,10 +6,12 @@
 -define(TRIES, 8).
 
 try_url(URL, Waiter, Headers, Params, FailCase) ->
-	case try_url_sync(URL, Headers, Params) of
-		not_found -> waiter:worker_finished(Waiter);
-		FailCase -> waiter:worker_finished(Waiter);
-		{Result, Payload} -> waiter:worker_finished(Waiter, URL, Result, Payload)
+	Response = try_url_sync(URL, Headers, Params),
+	case lists:member(Response, FailCase) of
+		true -> waiter:worker_finished(Waiter);
+		false ->
+			{Result, Payload} = Response,
+			waiter:worker_finished(Waiter, URL, Result, Payload)
 	end.
 
 try_url_sync(URL, Headers, Params) -> try_url_sync(URL, Headers, Params, head).

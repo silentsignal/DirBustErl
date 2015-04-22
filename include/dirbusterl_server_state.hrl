@@ -1,1 +1,1 @@
--record(state, {waiter, wordlist, config, urls, id, parents, fail_case=not_found}).
+-record(state, {waiter, wordlist, config, urls, id, parents, fail_case=[not_found]}).
