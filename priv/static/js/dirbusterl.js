@@ -284,7 +284,7 @@ function load_sessions_data(sessions) {
 	});
 }
 
-var last_reqs = null;
+var last_reqs = {};
 
 function set_tr_status(tr, st, session) {
 	var may_change = false;
@@ -294,9 +294,9 @@ function set_tr_status(tr, st, session) {
 			var stats = document.createElement("div");
 			stats.appendChild(document.createTextNode(
 						"running (" + session.requests.join(" / ") + " requests)" +
-						(last_reqs == null ? "" :
-						 " " + format_perfdata(session.requests))));
-			last_reqs = session.requests;
+						(last_reqs[session.id] == undefined ? "" :
+						 " " + format_perfdata(session.requests, last_reqs[session.id]))));
+			last_reqs[session.id] = session.requests;
 			st.appendChild(create_progressbar(session.requests));
 			st.appendChild(stats);
 			may_change = true;
@@ -319,8 +319,8 @@ function set_tr_status(tr, st, session) {
 	if (may_change) setTimeout("update_status('" + session.id + "')", 330);
 }
 
-function format_perfdata(reqs) {
-	rps = (reqs[0] - last_reqs[0]) * 3;
+function format_perfdata(reqs, session_last_reqs) {
+	rps = (reqs[0] - session_last_reqs[0]) * 3;
 	if (rps == 0) return "stalled";
 	return (rps + " req/s, " + Math.round((reqs[2] - reqs[0]) / rps) + " s remaining");
 }
