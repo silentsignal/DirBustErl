@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 from time import sleep
 from unittest import TestCase, main
-import json
 import requests
 
 DIRB_ROOT = 'http://localhost:8000/'
@@ -15,8 +14,7 @@ class TestDirBustErl(TestCase):
         self.session = requests.session()
 
     def start_bust(self, **params):
-        return self.session.post(BUST_RESOURCE_URL, data=json.dumps(params),
-                headers={'Content-Type': 'application/json'})
+        return self.session.post(BUST_RESOURCE_URL, json=params)
 
     def simple_bust(self, url):
         bust = self.start_bust(url=url, wordlist='TEST.txt',
